@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Connexion – CleanCam</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/main.css">
+<style>
+  .auth-tabs { display:flex; border-bottom:2px solid var(--grey-100); margin-bottom:1.75rem; }
+  .auth-tab  { flex:1; padding:.75rem; text-align:center; cursor:pointer; font-weight:600; font-size:.9rem; color:var(--grey-500); border-bottom:3px solid transparent; margin-bottom:-2px; transition:all var(--transition); }
+  .auth-tab.active { color:var(--green-700); border-bottom-color:var(--green-600); }
+  .auth-panel { display:none; }
+  .auth-panel.active { display:block; animation:fadeInUp .4s ease both; }
+  .pwd-toggle { position:absolute; right:.75rem; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; color:var(--grey-500); font-size:.9rem; }
+  .pwd-wrap { position:relative; }
+  .divider-or { display:flex; align-items:center; gap:1rem; color:var(--grey-400); font-size:.85rem; margin:1rem 0; }
+  .divider-or::before, .divider-or::after { content:''; flex:1; height:1px; background:var(--grey-200,#e5e7eb); }
+</style>
+</head>
+<body>
+<nav class="navbar" id="navbar">
+  <a href="../index.html" class="navbar-brand">
+    <svg viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="16" fill="#16a34a"/><path d="M8 20c2-4 4-8 8-10 4 2 6 6 8 10" stroke="white" stroke-width="2.2" stroke-linecap="round" fill="none"/><circle cx="16" cy="13" r="3" fill="white"/><path d="M10 24h12" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
+    CleanCam
+  </a>
+  <div class="navbar-actions">
+    <button class="lang-toggle" onclick="toggleLang()">🌍 <span data-i18n="lang_toggle">Français</span></button>
+  </div>
+</nav>
+
+<div class="auth-page page-content">
+  <!-- Animated background blobs -->
+  <div style="position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:0">
+    <div style="position:absolute;width:400px;height:400px;background:radial-gradient(circle,rgba(22,163,74,.12) 0%,transparent 70%);top:-100px;right:-100px;border-radius:50%;animation:floatSphere 7s ease-in-out infinite"></div>
+    <div style="position:absolute;width:300px;height:300px;background:radial-gradient(circle,rgba(34,197,94,.08) 0%,transparent 70%);bottom:-80px;left:-80px;border-radius:50%;animation:floatSphere 9s ease-in-out infinite reverse"></div>
+  </div>
+
+  <div class="auth-card" style="position:relative;z-index:1">
+    <div class="auth-logo">
+      <svg viewBox="0 0 32 32" fill="none" width="36" height="36"><circle cx="16" cy="16" r="16" fill="#16a34a"/><path d="M8 20c2-4 4-8 8-10 4 2 6 6 8 10" stroke="white" stroke-width="2.2" stroke-linecap="round" fill="none"/><circle cx="16" cy="13" r="3" fill="white"/><path d="M10 24h12" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
+      CleanCam
+    </div>
+
+    <!-- Tabs -->
+    <div class="auth-tabs">
+      <div class="auth-tab active" id="tab-login" onclick="switchTab('login')">
+        <span data-i18n="auth_login">Connexion</span>
+      </div>
+      <div class="auth-tab" id="tab-signup" onclick="switchTab('signup')">
+        <span data-i18n="auth_signup">Créer un compte</span>
+      </div>
+    </div>
+
+    <!-- Login panel -->
+    <div class="auth-panel active" id="panel-login">
+      <form id="login-form" onsubmit="handleLogin(event)" novalidate>
+        <div class="form-group mb-2">
+          <label class="form-label" for="login-email" data-i18n="auth_email">E-mail</label>
+          <input class="form-control" type="email" id="login-email" autocomplete="email" required value="admin@cleancam.cm">
+          <span class="form-error" id="err-login-email"></span>
+        </div>
+        <div class="form-group mb-2">
+          <label class="form-label" for="login-pass" data-i18n="auth_password">Mot de passe</label>
+          <div class="pwd-wrap">
+            <input class="form-control" type="password" id="login-pass" autocomplete="current-password" required value="CleanCam2026!">
+            <button type="button" class="pwd-toggle" onclick="togglePwd('login-pass',this)" aria-label="Show password">👁</button>
+          </div>
+          <span class="form-error" id="err-login-pass"></span>
+        </div>
+        <div id="login-error" style="display:none;padding:.625rem;background:#fee2e2;border-radius:var(--radius-sm);color:#991b1b;font-size:.875rem;margin-bottom:1rem"></div>
+
+        <button type="submit" class="btn btn-primary" style="width:100%;font-size:1rem" id="login-btn">
+          <span data-i18n="auth_login">Se connecter</span>
+        </button>
+
+        <div class="divider-or">ou</div>
+        <div style="text-align:center;font-size:.85rem;color:var(--grey-500)">
+          Accès démo admin: <code>admin@cleancam.cm</code> / <code>CleanCam2026!</code>
+        </div>
+      </form>
+    </div>
+
+    <!-- Sign-up panel -->
+    <div class="auth-panel" id="panel-signup">
+      <form id="signup-form" onsubmit="handleSignup(event)" novalidate>
+        <div class="form-group mb-2">
+          <label class="form-label" for="signup-name" data-i18n="auth_name">Nom complet</label>
+          <input class="form-control" type="text" id="signup-name" autocomplete="name" required placeholder="Jean-Pierre Kamga">
+          <span class="form-error" id="err-signup-name"></span>
+        </div>
+        <div class="form-group mb-2">
+          <label class="form-label" for="signup-email" data-i18n="auth_email">E-mail</label>
+          <input class="form-control" type="email" id="signup-email" autocomplete="email" required placeholder="votre@email.cm">
+          <span class="form-error" id="err-signup-email"></span>
+        </div>
+        <div class="form-group mb-2">
+          <label class="form-label" for="signup-phone" data-i18n="auth_phone">Téléphone (facultatif)</label>
+          <input class="form-control" type="tel" id="signup-phone" autocomplete="tel" placeholder="+237 6xx xxx xxx">
+        </div>
+        <div class="form-group mb-2">
+          <label class="form-label" for="signup-lang" data-i18n="auth_lang">Langue préférée</label>
+          <select class="form-control" id="signup-lang">
+            <option value="fr">Français</option>
+            <option value="en">English</option>
+          </select>
+        </div>
+        <div class="form-group mb-2">
+          <label class="form-label" for="signup-pass" data-i18n="auth_password">Mot de passe</label>
+          <div class="pwd-wrap">
+            <input class="form-control" type="password" id="signup-pass" autocomplete="new-password" required placeholder="Min. 8 caractères" minlength="8">
+            <button type="button" class="pwd-toggle" onclick="togglePwd('signup-pass',this)" aria-label="Show password">👁</button>
+          </div>
+          <span class="form-hint">Minimum 8 caractères</span>
+          <span class="form-error" id="err-signup-pass"></span>
+        </div>
+
+        <div id="signup-error" style="display:none;padding:.625rem;background:#fee2e2;border-radius:var(--radius-sm);color:#991b1b;font-size:.875rem;margin-bottom:1rem"></div>
+        <div id="signup-success" style="display:none;padding:.625rem;background:var(--green-100);border-radius:var(--radius-sm);color:var(--green-800);font-size:.875rem;margin-bottom:1rem">
+          ✅ Compte créé avec succès !
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width:100%;font-size:1rem" id="signup-btn">
+          <span data-i18n="auth_signup">Créer un compte</span>
+        </button>
+      </form>
+    </div>
+
+    <div style="margin-top:1.25rem;text-align:center">
+      <a href="../index.html" style="font-size:.875rem;color:var(--grey-500)">← Retour à l'accueil</a>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+<div class="loading-overlay" id="loading"><div class="spinner-lg"></div></div>
+
+<!-- Firebase SDK v10 (compat) -->
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-storage-compat.js"></script>
+
+<script src="../js/config.js"></script>
+<script src="../js/i18n.js"></script>
+<script src="../js/firebase-client.js"></script>
+<script src="../js/offline.js"></script>
+<script src="../js/ai.js"></script>
+<script src="../js/app.js"></script>
+<script>
+// ── Tab switching ─────────────────────────────────────────
+function switchTab(tab) {
+  document.querySelectorAll('.auth-tab, .auth-panel').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  document.getElementById('panel-' + tab).classList.add('active');
+}
+
+// ── Password toggle ───────────────────────────────────────
+function togglePwd(id, btn) {
+  const inp = document.getElementById(id);
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+  btn.textContent = inp.type === 'password' ? '👁' : '🙈';
+}
+
+// ── Login ─────────────────────────────────────────────────
+async function handleLogin(e) {
+  e.preventDefault();
+  const email = document.getElementById('login-email').value.trim();
+  const pass  = document.getElementById('login-pass').value;
+  const errEl = document.getElementById('login-error');
+  errEl.style.display = 'none';
+
+  if (!email || !pass) {
+    errEl.textContent = 'Veuillez remplir tous les champs.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  const btn = document.getElementById('login-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Connexion…';
+
+  try {
+    await window.db.signIn(email, pass);
+    window.location.href = 'dashboard.html';
+  } catch (err) {
+    errEl.textContent = err.message;
+    errEl.style.display = 'block';
+    btn.disabled = false;
+    btn.innerHTML = '<span data-i18n="auth_login">Se connecter</span>';
+  }
+}
+
+// ── Sign up ───────────────────────────────────────────────
+async function handleSignup(e) {
+  e.preventDefault();
+  const name  = document.getElementById('signup-name').value.trim();
+  const email = document.getElementById('signup-email').value.trim();
+  const phone = document.getElementById('signup-phone').value.trim();
+  const lang  = document.getElementById('signup-lang').value;
+  const pass  = document.getElementById('signup-pass').value;
+  const errEl = document.getElementById('signup-error');
+  const sucEl = document.getElementById('signup-success');
+  errEl.style.display = 'none';
+  sucEl.style.display = 'none';
+
+  if (!name || !email || !pass) {
+    errEl.textContent = 'Veuillez remplir les champs obligatoires.';
+    errEl.style.display = 'block';
+    return;
+  }
+  if (pass.length < 8) {
+    errEl.textContent = 'Le mot de passe doit contenir au moins 8 caractères.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  const btn = document.getElementById('signup-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Création…';
+
+  try {
+    await window.db.signUp(email, pass, { name, phone, language: lang, role: 'citizen' });
+    sucEl.style.display = 'block';
+    setTimeout(() => window.location.href = 'dashboard.html', 1500);
+  } catch (err) {
+    errEl.textContent = err.message;
+    errEl.style.display = 'block';
+    btn.disabled = false;
+    btn.innerHTML = '<span data-i18n="auth_signup">Créer un compte</span>';
+  }
+}
+</script>
+</body>
+</html>

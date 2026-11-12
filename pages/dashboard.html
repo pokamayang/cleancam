@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tableau de bord Officier – CleanCam</title>
+
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/main.css">
+<style>
+/* ── Dash-specific overrides ──────────────────────────────── */
+.dash-logo { display:flex; align-items:center; gap:.5rem; font-size:1.15rem; font-weight:800; color:white; padding:.75rem 1.25rem 1.25rem; }
+.dash-logo svg { width:28px; height:28px; }
+
+.dash-section { background:var(--white); border-radius:var(--radius-lg); box-shadow:var(--shadow-md); padding:1.5rem; margin-bottom:1.5rem; }
+.dash-section-title { font-size:1rem; font-weight:700; margin-bottom:1.25rem; display:flex; align-items:center; gap:.5rem; justify-content:space-between; }
+
+/* Mobile top bar for dashboard */
+.dash-topbar { display:none; background:var(--green-900); padding:.75rem 1.25rem; align-items:center; gap:1rem; position:sticky; top:0; z-index:200; }
+@media(max-width:900px){ .dash-topbar { display:flex; } }
+
+/* Chart canvas */
+.chart-wrap { position:relative; height:210px; }
+
+/* Detail drawer */
+.detail-drawer {
+  position:fixed; right:0; top:0; bottom:0; width:460px; max-width:100vw;
+  background:var(--white); box-shadow:var(--shadow-lg); z-index:500;
+  transform:translateX(100%); transition:transform .35s cubic-bezier(.4,0,.2,1);
+  display:flex; flex-direction:column; overflow:hidden;
+}
+.detail-drawer.open { transform:translateX(0); }
+.drawer-header { padding:1.25rem; border-bottom:1px solid var(--grey-100); display:flex; justify-content:space-between; align-items:center; background:var(--grey-50); }
+.drawer-body { flex:1; overflow-y:auto; padding:1.25rem; }
+.drawer-footer { padding:1rem 1.25rem; border-top:1px solid var(--grey-100); display:flex; gap:.625rem; flex-wrap:wrap; background:var(--white); }
+.drawer-overlay { position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:499; display:none; }
+.drawer-overlay.active { display:block; }
+
+/* Sortable table header */
+.sortable { cursor:pointer; user-select:none; }
+.sortable:hover { color:var(--green-700); }
+
+/* Status badge in table */
+.status-pill {
+  display:inline-flex; align-items:center; gap:.3rem;
+  padding:.2rem .625rem; border-radius:99px; font-size:.75rem; font-weight:700;
+}
+
+/* Realtime indicator */
+.realtime-dot { width:8px; height:8px; border-radius:50%; background:var(--green-500); animation:pulse 2s infinite; display:inline-block; margin-right:.35rem; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+</style>
+</head>
+<body>
+
+<!-- Mobile topbar -->
+<div class="dash-topbar">
+  <button onclick="toggleSidebar()" style="background:none;border:none;color:white;font-size:1.3rem;cursor:pointer" aria-label="Toggle menu">☰</button>
+  <span style="color:white;font-weight:700">🌿 CleanCam Admin</span>
+  <div style="margin-left:auto;display:flex;gap:.5rem">
+    <button class="lang-toggle" onclick="toggleLang()" style="font-size:.75rem">🌍 <span data-i18n="lang_toggle">Français</span></button>
+  </div>
+</div>
+
+<div class="dashboard-layout">
+
+  <!-- ── Sidebar ──────────────────────────────────────────── -->
+  <aside class="dash-sidebar" id="dash-sidebar" role="navigation" aria-label="Dashboard navigation">
+    <div class="dash-logo">
+      <svg viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="16" fill="#22c55e"/><path d="M8 20c2-4 4-8 8-10 4 2 6 6 8 10" stroke="white" stroke-width="2.2" stroke-linecap="round" fill="none"/><circle cx="16" cy="13" r="3" fill="white"/><path d="M10 24h12" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
+      CleanCam Admin
+    </div>
+
+    <ul class="dash-nav">
+      <li class="dash-nav-item"><a href="#" class="active" onclick="showPanel('overview')" id="nav-overview"><span class="nav-icon">📊</span> Vue d'ensemble</a></li>
+      <li class="dash-nav-item"><a href="#" onclick="showPanel('reports')" id="nav-reports"><span class="nav-icon">📋</span> <span data-i18n="dash_reports">Signalements</span> <span id="badge-review" class="badge badge-red" style="margin-left:auto;display:none">!</span></a></li>
+      <li class="dash-nav-item"><a href="#" onclick="showPanel('map')" id="nav-map"><span class="nav-icon">🗺</span> Carte temps réel</a></li>
+      <li class="dash-nav-item"><a href="#" onclick="showPanel('sensors')" id="nav-sensors"><span class="nav-icon">📡</span> <span data-i18n="dash_sensors">Capteurs Air</span></a></li>
+      <li class="dash-nav-item"><a href="#" onclick="showPanel('drainage')" id="nav-drainage"><span class="nav-icon">💧</span> DrainageGuard</a></li>
+      <li class="dash-nav-item"><a href="#" onclick="showPanel('clerk')" id="nav-clerk"><span class="nav-icon">📝</span> Saisie Guichet / Radio</a></li>
+      <li class="dash-nav-item"><a href="#" onclick="showPanel('alerts')" id="nav-alerts"><span class="nav-icon">🔔</span> <span data-i18n="dash_alerts">Alertes</span> <span id="badge-alerts" class="badge badge-red" style="margin-left:auto;display:none">0</span></a></li>
+      <li class="dash-nav-item"><a href="javascript:void(0)" onclick="openTestRunner()"><span class="nav-icon">🧪</span> Tests SRS (T1-T15)</a></li>
+      <li class="dash-nav-item"><a href="javascript:void(0)" onclick="openIVR()"><span class="nav-icon">📞</span> Ligne IVR (Demo)</a></li>
+      <li class="dash-nav-item" style="margin-top:auto"><a href="#" onclick="showPanel('settings')"><span class="nav-icon">⚙️</span> Paramètres</a></li>
+      <li class="dash-nav-item"><a href="#" onclick="doLogout()"><span class="nav-icon">🚪</span> <span data-i18n="nav_logout">Déconnexion</span></a></li>
+    </ul>
+
+    <div style="padding:1rem 1.25rem;margin-top:auto">
+      <div style="background:rgba(255,255,255,.08);border-radius:var(--radius-md);padding:.75rem">
+        <div style="font-size:.72rem;color:rgba(255,255,255,.5);margin-bottom:.25rem">Officier en ligne :</div>
+        <div style="font-size:.85rem;color:white;font-weight:600" id="sidebar-user">Chargement…</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── Main content ─────────────────────────────────────── -->
+  <main class="dash-main" id="dash-main">
+
+    <!-- ── OVERVIEW ──────────────────────────────────────── -->
+    <div id="panel-overview" class="dash-panel">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:.75rem">
+        <div>
+          <h2 style="font-size:1.5rem;margin:0">Tableau de Bord Officier</h2>
+          <p style="font-size:.85rem;color:var(--grey-500);margin:.25rem 0 0"><span class="realtime-dot"></span>Connecté Firebase · Actualisé à <span id="last-refresh">—</span></p>
+        </div>
+        <div style="display:flex;gap:.625rem;flex-wrap:wrap">
+          <button class="btn btn-outline btn-sm" onclick="openTestRunner()">🧪 Tests T1-T15</button>
+          <button class="btn btn-outline btn-sm" onclick="openIVR()">📞 Ligne Vocale</button>
+          <button class="lang-toggle" onclick="toggleLang()">🌍 <span data-i18n="lang_toggle">Français</span></button>
+          <button class="btn btn-primary btn-sm" onclick="refreshDashboard()">↻ Actualiser</button>
+        </div>
+      </div>
+
+      <!-- KPI cards -->
+      <div class="kpi-grid" id="kpi-grid">
+        <div class="kpi-card"><div class="kpi-icon green">📋</div><div><div class="kpi-num" id="kpi-total">—</div><div class="kpi-label">Signalements total</div></div></div>
+        <div class="kpi-card"><div class="kpi-icon green">✅</div><div><div class="kpi-num" id="kpi-resolved">—</div><div class="kpi-label">Résolus</div></div></div>
+        <div class="kpi-card"><div class="kpi-icon orange">🔥</div><div><div class="kpi-num" id="kpi-hotspots">—</div><div class="kpi-label">Points chauds actifs</div></div></div>
+        <div class="kpi-card"><div class="kpi-icon red">🔔</div><div><div class="kpi-num" id="kpi-alerts">—</div><div class="kpi-label">Alertes en attente</div></div></div>
+      </div>
+
+      <!-- Charts strip -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem">
+        <div class="dash-section" style="margin-bottom:0">
+          <div class="dash-section-title">📈 Signalements par type <span style="font-size:.75rem;color:var(--grey-400);font-weight:400">7 derniers jours</span></div>
+          <div class="chart-wrap"><canvas id="type-chart"></canvas></div>
+        </div>
+        <div class="dash-section" style="margin-bottom:0">
+          <div class="dash-section-title">📊 Répartition des statuts <span style="font-size:.75rem;color:var(--grey-400);font-weight:400">Toutes communes</span></div>
+          <div class="chart-wrap"><canvas id="status-chart"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Recent reports table (last 10) -->
+      <div class="dash-section">
+        <div class="dash-section-title">
+          <span>🕐 Signalements récents</span>
+          <div style="display:flex;gap:.5rem">
+            <button class="btn btn-outline btn-sm" onclick="showPanel('clerk')">+ Saisie Guichet</button>
+            <button class="btn btn-ghost btn-sm" onclick="showPanel('reports')">Voir tout (300) →</button>
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="data-table" id="recent-table">
+            <thead><tr>
+              <th>Réf.</th><th>Type</th><th>Quartier</th><th>Statut</th><th>Canal</th><th>Date</th><th>Action</th>
+            </tr></thead>
+            <tbody id="recent-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── REPORTS ────────────────────────────────────────── -->
+    <div id="panel-reports" class="dash-panel" style="display:none">
+      <div class="dash-section-title" style="margin-bottom:1rem">
+        <h2 style="font-size:1.3rem;margin:0" data-i18n="dash_reports">Signalements</h2>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+          <button class="btn btn-outline btn-sm" onclick="exportCSV()">⬇ <span data-i18n="dash_export">Export CSV</span></button>
+          <button class="btn btn-primary btn-sm" onclick="showPanel('clerk')">+ Nouveau signalement (Mairie)</button>
+          <button class="btn btn-ghost btn-sm" onclick="refreshDashboard()">↻</button>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="filter-bar">
+        <select class="form-control" id="f-status" onchange="applyFilters()">
+          <option value="all">Tous statuts</option>
+          <option value="submitted">Soumis</option>
+          <option value="assigned">Assigné</option>
+          <option value="in_progress">En cours</option>
+          <option value="resolved">Résolu</option>
+          <option value="rejected">Rejeté</option>
+        </select>
+        <select class="form-control" id="f-type" onchange="applyFilters()">
+          <option value="all">Tous types</option>
+          <option value="burning_waste">Brûlage</option>
+          <option value="plastic_waste">Plastique</option>
+          <option value="open_dump">Décharge</option>
+          <option value="water_contamination">Eau</option>
+          <option value="drain_blockage">Caniveau</option>
+          <option value="air_smoke">Fumée/Air</option>
+          <option value="dust">Poussière</option>
+          <option value="oil_spill">Hydrocarbures</option>
+          <option value="other">Autre</option>
+        </select>
+        <select class="form-control" id="f-district" onchange="applyFilters()">
+          <option value="all">Tous districts</option>
+          <option value="douala">Douala</option>
+          <option value="yaounde">Yaoundé</option>
+        </select>
+        <select class="form-control" id="f-channel" onchange="applyFilters()">
+          <option value="all">Tous canaux</option>
+          <option value="pwa">PWA</option>
+          <option value="voice_call">Appel vocal</option>
+          <option value="agent">Agent</option>
+          <option value="clerk">Mairie/Radio</option>
+        </select>
+        <input class="form-control" type="text" id="f-search" placeholder="Rechercher réf, quartier..." oninput="applyFilters()" style="max-width:220px">
+        <label style="display:flex;align-items:center;gap:.35rem;font-size:.85rem;cursor:pointer;white-space:nowrap">
+          <input type="checkbox" id="f-review" onchange="applyFilters()"> ⚠️ À réviser (IA &lt; 0.6)
+        </label>
+      </div>
+
+      <div style="overflow-x:auto">
+        <table class="data-table" id="reports-table">
+          <thead><tr>
+            <th class="sortable" onclick="sortTable('reference')">Réf. ↕</th>
+            <th class="sortable" onclick="sortTable('type')">Type ↕</th>
+            <th>Quartier</th>
+            <th class="sortable" onclick="sortTable('severity')">Sév. ↕</th>
+            <th>Statut</th>
+            <th>Canal</th>
+            <th class="sortable" onclick="sortTable('created_at')">Date ↕</th>
+            <th>IA / Revue</th>
+            <th>Action</th>
+          </tr></thead>
+          <tbody id="reports-tbody"></tbody>
+        </table>
+        <div id="reports-empty" style="display:none;padding:3rem;text-align:center;color:var(--grey-400)">
+          <div style="font-size:2rem">🔍</div><p>Aucun signalement trouvé</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── MAP ───────────────────────────────────────────── -->
+    <div id="panel-map" class="dash-panel" style="display:none">
+      <div class="dash-section-title" style="margin-bottom:1rem">
+        <h2 style="font-size:1.3rem;margin:0">🗺 Carte opérationnelle des équipes</h2>
+        <span class="realtime-dot"></span>
+      </div>
+      <div id="dash-map" style="height:calc(100vh - 200px);border-radius:var(--radius-lg);overflow:hidden;min-height:450px"></div>
+    </div>
+
+    <!-- ── SENSORS (AIR) ─────────────────────────────────── -->
+    <div id="panel-sensors" class="dash-panel" style="display:none">
+      <div class="dash-section-title" style="margin-bottom:1rem">
+        <h2 style="font-size:1.3rem;margin:0">📡 Réseau de Capteurs Particulaires (PM2.5 / PM10)</h2>
+        <div style="display:flex;gap:.5rem">
+          <button class="btn btn-outline btn-sm" onclick="triggerAkwaSpike()">⚡ Simuler Pic PM2.5 (Akwa)</button>
+          <button class="btn btn-ghost btn-sm" onclick="loadSensors()">↻</button>
+        </div>
+      </div>
+      <div id="sensors-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1rem"></div>
+    </div>
+
+    <!-- ── DRAINAGEGUARD (FLOOD / BLOCKAGE) ──────────────── -->
+    <div id="panel-drainage" class="dash-panel" style="display:none">
+      <div class="dash-section-title" style="margin-bottom:1rem">
+        <div>
+          <h2 style="font-size:1.3rem;margin:0">💧 DrainageGuard – Surveillance Caniveaux &amp; Inondations</h2>
+          <span style="font-size:.78rem;color:var(--grey-500)">Formule Heuristique: 40% Niveau d'eau + 30% Pluie + 30% Blocage Débris</span>
+        </div>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+          <button class="btn btn-danger btn-sm" onclick="triggerDrainSurge()">⚡ Simuler Crue d'eau (44cm)</button>
+          <button class="btn btn-ghost btn-sm" onclick="loadDrainage()">↻</button>
+        </div>
+      </div>
+      <div id="drainage-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1rem"></div>
+    </div>
+
+    <!-- ── CLERK / RADIO ENTRY FORM (FR-DASH-06) ─────────── -->
+    <div id="panel-clerk" class="dash-panel" style="display:none">
+      <div class="dash-section" style="max-width:640px;margin:0 auto">
+        <h2 style="font-size:1.25rem;margin-bottom:1rem">📝 Formulaire de Saisie Guichet / Radio / Appel</h2>
+        <p style="font-size:.85rem;color:var(--grey-500);margin-bottom:1.5rem">
+          Utilisé par les agents communaux pour consigner un signalement reçu par téléphone, radio locale ou dépôt physique.
+        </p>
+        <form id="clerk-form" onsubmit="handleClerkSubmit(event)">
+          <div class="form-group" style="margin-bottom:1rem">
+            <label class="form-label">Canal de réception</label>
+            <select class="form-control" id="clerk-channel">
+              <option value="clerk">🏛 Guichet Mairie (Dépôt direct)</option>
+              <option value="voice_call">📞 Appel téléphonique direct</option>
+              <option value="agent">📻 Radio communautaire locale</option>
+              <option value="sms">💬 Message SMS court</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom:1rem">
+            <label class="form-label">Type de pollution</label>
+            <select class="form-control" id="clerk-type" required>
+              <option value="burning_waste">🔥 Brûlage de déchets sauvages</option>
+              <option value="drain_blockage">🚧 Caniveau / Drain bouché</option>
+              <option value="plastic_waste">🗑️ Déchets plastiques</option>
+              <option value="open_dump">🗂️ Décharge sauvage</option>
+              <option value="water_contamination">💧 Contamination d'un cours d'eau</option>
+              <option value="air_smoke">💨 Fumée d'usine ou d'atelier</option>
+              <option value="dust">🌫️ Nuage de poussière intense</option>
+              <option value="oil_spill">🛢️ Vidange d'huile / Hydrocarbures</option>
+              <option value="other">❓ Autre</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom:1rem">
+            <label class="form-label">Quartier / Repère</label>
+            <select class="form-control" id="clerk-quarter" required>
+              <option value="Akwa">Akwa (Douala)</option>
+              <option value="Bonanjo">Bonanjo (Douala)</option>
+              <option value="Deido">Deido (Douala)</option>
+              <option value="New Bell">New Bell (Douala)</option>
+              <option value="Banya-Sable">Banya-Sable (Douala)</option>
+              <option value="Makepe">Makepe (Douala)</option>
+              <option value="Bonabéri">Bonabéri (Douala)</option>
+              <option value="Mokolo">Mokolo (Yaoundé)</option>
+              <option value="Briqueterie">Briqueterie (Yaoundé)</option>
+              <option value="Mvog-Ada">Mvog-Ada (Yaoundé)</option>
+              <option value="Nlongkak">Nlongkak (Yaoundé)</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom:1rem">
+            <label class="form-label">Description du problème</label>
+            <textarea class="form-control" id="clerk-desc" rows="3" placeholder="Détails transmis par le citoyen..." required></textarea>
+          </div>
+          <div class="form-group" style="margin-bottom:1.5rem">
+            <label class="form-label">Sévérité estimée (1 à 5)</label>
+            <select class="form-control" id="clerk-sev">
+              <option value="1">1 - Mineur</option>
+              <option value="2">2 - Faible</option>
+              <option value="3" selected>3 - Modéré</option>
+              <option value="4">4 - Élevé</option>
+              <option value="5">5 - Critique / Danger imminent</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary" style="width:100%">
+            Enregistrer le signalement officiel
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- ── ALERTS ────────────────────────────────────────── -->
+    <div id="panel-alerts" class="dash-panel" style="display:none">
+      <div class="dash-section-title" style="margin-bottom:1rem">
+        <h2 style="font-size:1.3rem;margin:0">🔔 Alertes &amp; Dépassements de Seuils</h2>
+        <button class="btn btn-ghost btn-sm" onclick="loadAlerts()">↻ Actualiser</button>
+      </div>
+      <div id="alerts-list"></div>
+    </div>
+
+    <!-- ── SETTINGS ──────────────────────────────────────── -->
+    <div id="panel-settings" class="dash-panel" style="display:none">
+      <div class="dash-section-title" style="margin-bottom:1rem"><h2 style="font-size:1.3rem;margin:0">⚙️ Paramètres</h2></div>
+      <div class="dash-section">
+        <h4 style="margin-bottom:1rem">👤 Mon compte</h4>
+        <div id="user-info-panel" style="display:flex;flex-direction:column;gap:.75rem"></div>
+      </div>
+      <div class="dash-section">
+        <h4 style="margin-bottom:1rem">🌍 Interface</h4>
+        <div class="form-group"><label class="form-label">Langue / Language</label>
+          <div style="display:flex;gap:.625rem">
+            <button class="btn btn-outline btn-sm" onclick="i18n.setLang('fr');refreshDashboard();">Français</button>
+            <button class="btn btn-outline btn-sm" onclick="i18n.setLang('en');refreshDashboard();">English</button>
+          </div>
+        </div>
+      </div>
+      <div class="dash-section">
+        <h4 style="margin-bottom:1rem">🗄️ Backend Firebase</h4>
+        <p style="font-size:.875rem;color:var(--grey-500);margin-bottom:1rem">Projet Firebase : <code>symbolic-mystery-c07pf</code></p>
+        <button class="btn btn-outline btn-sm" onclick="testConnection()">Tester la connexion</button>
+        <span id="conn-result" style="font-size:.85rem;margin-left:.75rem"></span>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ── Report detail drawer ──────────────────────────────── -->
+<div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
+<div class="detail-drawer" id="detail-drawer" role="dialog" aria-modal="true" aria-label="Report details">
+  <div class="drawer-header">
+    <div>
+      <h3 id="drawer-ref" style="font-size:1.05rem;margin:0"></h3>
+      <span id="drawer-status-badge" class="status-pill" style="margin-top:.25rem"></span>
+    </div>
+    <button onclick="closeDrawer()" class="btn btn-ghost btn-sm" aria-label="Close" style="font-size:1.2rem">✕</button>
+  </div>
+  <div class="drawer-body" id="drawer-body">
+    <!-- filled by JS -->
+  </div>
+  <div class="drawer-footer" id="drawer-footer">
+    <button class="btn btn-primary btn-sm" id="btn-assign"    onclick="changeStatus('assigned')"    data-i18n="dash_assign">Assigner</button>
+    <button class="btn btn-outline btn-sm" id="btn-progress"  onclick="changeStatus('in_progress')">En cours</button>
+    <button class="btn btn-primary btn-sm" id="btn-resolve"   onclick="changeStatus('resolved')"    data-i18n="dash_resolve" style="background:var(--green-600)">Résoudre</button>
+    <button class="btn btn-danger btn-sm"  id="btn-reject"    onclick="promptReject()">Rejeter</button>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+<div class="loading-overlay" id="loading"><div class="spinner-lg"></div></div>
+
+<!-- Scripts -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+
+<!-- Firebase SDK v10 (compat) -->
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-storage-compat.js"></script>
+
+<script src="../js/config.js"></script>
+<script src="../js/i18n.js"></script>
+<script src="../js/firebase-client.js"></script>
+<script src="../js/offline.js"></script>
+<script src="../js/ai.js"></script>
+<script src="../js/ivr-simulator.js"></script>
+<script src="../js/acceptance-tests.js"></script>
+<script src="../js/app.js"></script>
+<script src="../js/dashboard.js"></script>
+</body>
+</html>

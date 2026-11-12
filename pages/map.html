@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Carte des Points Chauds – CleanCam</title>
+
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/main.css">
+<style>
+  body { overflow: hidden; }
+  #map-container { height: calc(100vh - 68px); display: flex; }
+  #leaflet-map   { flex: 1; }
+
+  .map-sidebar {
+    width: 340px; background: var(--white);
+    overflow-y: auto; display: flex; flex-direction: column;
+    box-shadow: -4px 0 20px rgba(0,0,0,.08);
+  }
+  .map-header {
+    background: var(--green-700); color: white;
+    padding: 1rem 1.25rem; display: flex; justify-content: space-between; align-items: center;
+  }
+  .map-header h3 { color: white; font-size: 1rem; margin: 0; }
+
+  /* District switcher */
+  .district-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--grey-100); }
+  .dtab {
+    flex: 1; padding: .625rem; text-align: center;
+    font-size: .82rem; font-weight: 600; cursor: pointer;
+    color: var(--grey-500); border-bottom: 3px solid transparent;
+    transition: all var(--transition);
+  }
+  .dtab.active { color: var(--green-700); border-bottom-color: var(--green-600); background: var(--green-50); }
+
+  /* Cell info panel */
+  .cell-info { flex: 1; padding: 1.25rem; display: none; }
+  .cell-info.active { display: block; }
+  .cell-empty { flex: 1; padding: 2rem 1.25rem; text-align: center; color: var(--grey-400); display: flex; flex-direction: column; align-items: center; gap: .5rem; }
+  .cell-empty-icon { font-size: 2.5rem; }
+
+  .factor-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: .5rem; font-size: .85rem; }
+  .factor-label { color: var(--grey-600, #4b5563); }
+
+  /* Mobile: sidebar below map */
+  @media(max-width:768px){
+    body { overflow: auto; }
+    #map-container { flex-direction: column; height: auto; }
+    #leaflet-map   { height: 55vw; min-height: 280px; }
+    .map-sidebar   { width: 100%; max-height: 60vh; }
+  }
+
+  /* Custom markers */
+  .sensor-badge-icon {
+    border-radius: 99px; padding: 2px 6px; font-size: .72rem; font-weight: 700;
+    color: white; border: 2px solid white; box-shadow: 0 2px 6px rgba(0,0,0,.3);
+    display: inline-flex; align-items: center; gap: 3px; white-space: nowrap;
+  }
+</style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar" id="navbar">
+  <a href="../index.html" class="navbar-brand">
+    <svg viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="16" fill="#16a34a"/><path d="M8 20c2-4 4-8 8-10 4 2 6 6 8 10" stroke="white" stroke-width="2.2" stroke-linecap="round" fill="none"/><circle cx="16" cy="13" r="3" fill="white"/><path d="M10 24h12" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
+    CleanCam
+  </a>
+  <ul class="navbar-links" id="nav-links">
+    <li><a href="../index.html" data-i18n="nav_home">Accueil</a></li>
+    <li><a href="report.html" data-i18n="nav_report">Signaler</a></li>
+    <li><a href="map.html" class="active" data-i18n="nav_map">Carte</a></li>
+    <li><a href="dashboard.html">Dashboard</a></li>
+    <li><a href="javascript:void(0)" onclick="openIVR()">📞 <span data-i18n="nav_ivr">Ligne IVR</span></a></li>
+    <li id="nav-auth-login"><a href="login.html" data-i18n="nav_login">Connexion</a></li>
+    <li id="nav-auth-logout" style="display:none"><a href="#" onclick="handleLogout()" data-i18n="nav_logout">Déconnexion</a></li>
+  </ul>
+  <div class="navbar-actions">
+    <button class="lang-toggle" onclick="toggleLang()">🌍 <span data-i18n="lang_toggle">Français</span></button>
+    <a href="report.html" class="btn btn-primary btn-sm" data-i18n="nav_report">Signaler</a>
+    <button class="hamburger" id="hamburger" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+
+<div id="offline-badge"></div>
+
+<div id="map-container" class="page-content">
+  <div id="leaflet-map" aria-label="Pollution hotspot map"></div>
+
+  <aside class="map-sidebar" aria-label="Map information panel">
+    <!-- Header with filter -->
+    <div class="map-header">
+      <h3 data-i18n="map_title">🗺 Carte des points chauds</h3>
+      <select id="days-filter" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:white;border-radius:var(--radius-sm);padding:.25rem .5rem;font-size:.8rem;cursor:pointer">
+        <option value="7" data-i18n="map_days_7">7 jours</option>
+        <option value="30" data-i18n="map_days_30">30 jours</option>
+      </select>
+    </div>
+
+    <!-- District tabs -->
+    <div class="district-tabs">
+      <div class="dtab active" data-district="douala" onclick="switchDistrict('douala')">Douala – Akwa</div>
+      <div class="dtab" data-district="yaounde" onclick="switchDistrict('yaounde')">Yaoundé – Mokolo</div>
+    </div>
+
+    <!-- Layer toggles -->
+    <div class="map-layers" role="group" aria-label="Map layers">
+      <div class="layer-toggle active" data-layer="heatmap" onclick="toggleLayer(this,'heatmap')">
+        🔥 <span data-i18n="map_layer_heat">Grille Hotspot</span>
+      </div>
+      <div class="layer-toggle active" data-layer="sensors" onclick="toggleLayer(this,'sensors')">
+        📡 <span data-i18n="map_layer_air">Capteurs &amp; Drains</span>
+      </div>
+      <div class="layer-toggle active" data-layer="reports" onclick="toggleLayer(this,'reports')">
+        📌 <span data-i18n="map_layer_rep">Signalements</span>
+      </div>
+      <div class="layer-toggle active" data-layer="traffic" onclick="toggleLayer(this,'traffic')">
+        🚗 <span data-i18n="map_layer_traf">Trafic</span>
+      </div>
+    </div>
+
+    <!-- Legend -->
+    <div class="map-legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#22c55e"></div> <span data-i18n="risk_low">Faible</span> 0–24</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#eab308"></div> <span data-i18n="risk_moderate">Modéré</span> 25–49</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#f97316"></div> <span data-i18n="risk_high">Élevé</span> 50–74</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div> <span data-i18n="risk_critical">Critique</span> 75+</div>
+      <div class="legend-item"><span style="font-size:.75rem;border:1.5px dashed var(--grey-400);padding:1px 6px;border-radius:4px" data-i18n="map_estimated">Estimé (interpolé)</span></div>
+    </div>
+
+    <!-- Empty state -->
+    <div class="cell-empty" id="cell-empty">
+      <div class="cell-empty-icon">👆</div>
+      <p style="font-size:.875rem">
+        Cliquez sur une cellule de grille pour voir le score et l'explication des facteurs.<br>
+        <span style="font-size:.78rem;color:var(--grey-500)">Click any grid cell to view drivers</span>
+      </p>
+    </div>
+
+    <!-- Cell detail -->
+    <div class="cell-info" id="cell-info" role="region" aria-label="Cell details" aria-live="polite">
+      <!-- filled by JS -->
+    </div>
+  </aside>
+</div>
+
+<div id="toast-container"></div>
+<div class="loading-overlay" id="loading"><div class="spinner-lg"></div></div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<!-- Firebase SDK v10 (compat) -->
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-storage-compat.js"></script>
+
+<script src="../js/config.js"></script>
+<script src="../js/i18n.js"></script>
+<script src="../js/firebase-client.js"></script>
+<script src="../js/offline.js"></script>
+<script src="../js/ai.js"></script>
+<script src="../js/ivr-simulator.js"></script>
+<script src="../js/app.js"></script>
+<script src="../js/map.js"></script>
+</body>
+</html>
