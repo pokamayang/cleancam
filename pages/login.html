@@ -4,19 +4,32 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Connexion – CleanCam</title>
+<link rel="icon" type="image/svg+xml" href="../assets/icons/favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-Avb2QiuDEEvB4bZJYdft2mNjVShBftLdPG8FJ0V7irTLQ8Uo0qcPxh4Plq7G5tGm0rU+1SPhVotteLpBERwTkw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 <link rel="stylesheet" href="../css/main.css">
 <style>
   .auth-tabs { display:flex; border-bottom:2px solid var(--grey-100); margin-bottom:1.75rem; }
-  .auth-tab  { flex:1; padding:.75rem; text-align:center; cursor:pointer; font-weight:600; font-size:.9rem; color:var(--grey-500); border-bottom:3px solid transparent; margin-bottom:-2px; transition:all var(--transition); }
+  .auth-tab  { flex:1; padding:.75rem .5rem; text-align:center; cursor:pointer; font-weight:600; font-size:.88rem; color:var(--grey-500); border-bottom:3px solid transparent; margin-bottom:-2px; transition:all var(--transition); }
   .auth-tab.active { color:var(--green-700); border-bottom-color:var(--green-600); }
   .auth-panel { display:none; }
   .auth-panel.active { display:block; animation:fadeInUp .4s ease both; }
-  .pwd-toggle { position:absolute; right:.75rem; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; color:var(--grey-500); font-size:.9rem; }
+  .pwd-toggle { position:absolute; right:.75rem; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; color:var(--grey-500); font-size:.9rem; padding:.25rem; }
   .pwd-wrap { position:relative; }
   .divider-or { display:flex; align-items:center; gap:1rem; color:var(--grey-400); font-size:.85rem; margin:1rem 0; }
   .divider-or::before, .divider-or::after { content:''; flex:1; height:1px; background:var(--grey-200,#e5e7eb); }
+  .role-select-btn {
+    display:flex; align-items:center; gap:.75rem;
+    padding:.75rem 1rem; border-radius:var(--radius-md);
+    border:1.5px solid var(--grey-300); background:white;
+    width:100%; cursor:pointer; font-size:.9rem; font-weight:500;
+    color:var(--grey-700); transition:all var(--transition); margin-bottom:.625rem;
+  }
+  .role-select-btn:hover { border-color:var(--green-400); background:var(--green-50); }
+  .role-select-btn.active { border-color:var(--green-600); background:var(--green-50); color:var(--green-800); }
+  .role-select-btn .role-icon { width:36px; height:36px; border-radius:var(--radius-sm); background:var(--green-100); display:flex; align-items:center; justify-content:center; color:var(--green-700); flex-shrink:0; }
+  .optional-badge { display:inline-flex; align-items:center; gap:.35rem; background:#eff6ff; color:#1d4ed8; border-radius:99px; padding:.2rem .625rem; font-size:.72rem; font-weight:700; margin-left:.5rem; }
 </style>
 </head>
 <body>
@@ -26,12 +39,14 @@
     CleanCam
   </a>
   <div class="navbar-actions">
-    <button class="lang-toggle" onclick="toggleLang()">🌍 <span data-i18n="lang_toggle">Français</span></button>
+    <button class="lang-toggle" onclick="toggleLang()" id="lang-btn">
+      <i class="fa-solid fa-earth-africa"></i> <span data-i18n="lang_toggle">Français</span>
+    </button>
   </div>
 </nav>
 
 <div class="auth-page page-content">
-  <!-- Animated background blobs -->
+  <!-- Background blobs -->
   <div style="position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:0">
     <div style="position:absolute;width:400px;height:400px;background:radial-gradient(circle,rgba(22,163,74,.12) 0%,transparent 70%);top:-100px;right:-100px;border-radius:50%;animation:floatSphere 7s ease-in-out infinite"></div>
     <div style="position:absolute;width:300px;height:300px;background:radial-gradient(circle,rgba(34,197,94,.08) 0%,transparent 70%);bottom:-80px;left:-80px;border-radius:50%;animation:floatSphere 9s ease-in-out infinite reverse"></div>
@@ -43,13 +58,21 @@
       CleanCam
     </div>
 
+    <!-- Optional notice -->
+    <div style="background:var(--green-50);border:1.5px solid var(--green-200,#bbf7d0);border-radius:var(--radius-md);padding:.75rem 1rem;margin-bottom:1.5rem;font-size:.85rem;color:var(--green-800)">
+      <i class="fa-solid fa-circle-info" style="margin-right:.4rem"></i>
+      <strong>Connexion optionnelle.</strong> Vous pouvez 
+      <a href="report.html" style="color:var(--green-700);font-weight:700;text-decoration:underline">signaler une pollution</a> ou 
+      <a href="map.html" style="color:var(--green-700);font-weight:700;text-decoration:underline">consulter la carte</a> sans compte.
+    </div>
+
     <!-- Tabs -->
     <div class="auth-tabs">
       <div class="auth-tab active" id="tab-login" onclick="switchTab('login')">
-        <span data-i18n="auth_login">Connexion</span>
+        <i class="fa-solid fa-right-to-bracket" style="margin-right:.3rem"></i><span data-i18n="auth_login">Connexion</span>
       </div>
       <div class="auth-tab" id="tab-signup" onclick="switchTab('signup')">
-        <span data-i18n="auth_signup">Créer un compte</span>
+        <i class="fa-solid fa-user-plus" style="margin-right:.3rem"></i><span data-i18n="auth_signup">Créer un compte</span>
       </div>
     </div>
 
@@ -57,27 +80,38 @@
     <div class="auth-panel active" id="panel-login">
       <form id="login-form" onsubmit="handleLogin(event)" novalidate>
         <div class="form-group mb-2">
-          <label class="form-label" for="login-email" data-i18n="auth_email">E-mail</label>
-          <input class="form-control" type="email" id="login-email" autocomplete="email" required value="admin@cleancam.cm">
+          <label class="form-label" for="login-email">
+            <i class="fa-solid fa-envelope" style="color:var(--green-600);margin-right:.3rem"></i>
+            <span data-i18n="auth_email">E-mail</span>
+          </label>
+          <input class="form-control" type="email" id="login-email" autocomplete="email" required placeholder="votre@email.cm">
           <span class="form-error" id="err-login-email"></span>
         </div>
         <div class="form-group mb-2">
-          <label class="form-label" for="login-pass" data-i18n="auth_password">Mot de passe</label>
+          <label class="form-label" for="login-pass">
+            <i class="fa-solid fa-lock" style="color:var(--green-600);margin-right:.3rem"></i>
+            <span data-i18n="auth_password">Mot de passe</span>
+          </label>
           <div class="pwd-wrap">
-            <input class="form-control" type="password" id="login-pass" autocomplete="current-password" required value="CleanCam2026!">
-            <button type="button" class="pwd-toggle" onclick="togglePwd('login-pass',this)" aria-label="Show password">👁</button>
+            <input class="form-control" type="password" id="login-pass" autocomplete="current-password" required>
+            <button type="button" class="pwd-toggle" onclick="togglePwd('login-pass',this)" aria-label="Afficher le mot de passe">
+              <i class="fa-solid fa-eye"></i>
+            </button>
           </div>
           <span class="form-error" id="err-login-pass"></span>
         </div>
-        <div id="login-error" style="display:none;padding:.625rem;background:#fee2e2;border-radius:var(--radius-sm);color:#991b1b;font-size:.875rem;margin-bottom:1rem"></div>
+        <div id="login-error" style="display:none;padding:.625rem;background:#fee2e2;border-radius:var(--radius-sm);color:#991b1b;font-size:.875rem;margin-bottom:1rem;border-left:4px solid var(--red)">
+          <i class="fa-solid fa-circle-exclamation" style="margin-right:.3rem"></i><span id="login-error-text"></span>
+        </div>
 
         <button type="submit" class="btn btn-primary" style="width:100%;font-size:1rem" id="login-btn">
-          <span data-i18n="auth_login">Se connecter</span>
+          <i class="fa-solid fa-right-to-bracket"></i>&nbsp;<span data-i18n="auth_login">Se connecter</span>
         </button>
 
         <div class="divider-or">ou</div>
-        <div style="text-align:center;font-size:.85rem;color:var(--grey-500)">
-          Accès démo admin: <code>admin@cleancam.cm</code> / <code>CleanCam2026!</code>
+        <div style="text-align:center;font-size:.85rem;color:var(--grey-600)">
+          <i class="fa-solid fa-hard-hat" style="color:var(--green-600)"></i>&nbsp;
+          Vous êtes agent de terrain ? Utilisez vos identifiants fournis par l'administrateur.
         </div>
       </form>
     </div>
@@ -86,49 +120,75 @@
     <div class="auth-panel" id="panel-signup">
       <form id="signup-form" onsubmit="handleSignup(event)" novalidate>
         <div class="form-group mb-2">
-          <label class="form-label" for="signup-name" data-i18n="auth_name">Nom complet</label>
+          <label class="form-label" for="signup-name">
+            <i class="fa-solid fa-user" style="color:var(--green-600);margin-right:.3rem"></i>
+            <span data-i18n="auth_name">Nom complet</span>
+          </label>
           <input class="form-control" type="text" id="signup-name" autocomplete="name" required placeholder="Jean-Pierre Kamga">
           <span class="form-error" id="err-signup-name"></span>
         </div>
         <div class="form-group mb-2">
-          <label class="form-label" for="signup-email" data-i18n="auth_email">E-mail</label>
+          <label class="form-label" for="signup-email">
+            <i class="fa-solid fa-envelope" style="color:var(--green-600);margin-right:.3rem"></i>
+            <span data-i18n="auth_email">E-mail</span>
+          </label>
           <input class="form-control" type="email" id="signup-email" autocomplete="email" required placeholder="votre@email.cm">
           <span class="form-error" id="err-signup-email"></span>
         </div>
         <div class="form-group mb-2">
-          <label class="form-label" for="signup-phone" data-i18n="auth_phone">Téléphone (facultatif)</label>
+          <label class="form-label" for="signup-phone">
+            <i class="fa-solid fa-phone" style="color:var(--green-600);margin-right:.3rem"></i>
+            <span data-i18n="auth_phone">Téléphone (facultatif)</span>
+          </label>
           <input class="form-control" type="tel" id="signup-phone" autocomplete="tel" placeholder="+237 6xx xxx xxx">
         </div>
         <div class="form-group mb-2">
-          <label class="form-label" for="signup-lang" data-i18n="auth_lang">Langue préférée</label>
+          <label class="form-label" for="signup-lang">
+            <i class="fa-solid fa-earth-africa" style="color:var(--green-600);margin-right:.3rem"></i>
+            <span data-i18n="auth_lang">Langue préférée</span>
+          </label>
           <select class="form-control" id="signup-lang">
             <option value="fr">Français</option>
             <option value="en">English</option>
           </select>
         </div>
         <div class="form-group mb-2">
-          <label class="form-label" for="signup-pass" data-i18n="auth_password">Mot de passe</label>
+          <label class="form-label" for="signup-pass">
+            <i class="fa-solid fa-lock" style="color:var(--green-600);margin-right:.3rem"></i>
+            <span data-i18n="auth_password">Mot de passe</span>
+          </label>
           <div class="pwd-wrap">
             <input class="form-control" type="password" id="signup-pass" autocomplete="new-password" required placeholder="Min. 8 caractères" minlength="8">
-            <button type="button" class="pwd-toggle" onclick="togglePwd('signup-pass',this)" aria-label="Show password">👁</button>
+            <button type="button" class="pwd-toggle" onclick="togglePwd('signup-pass',this)" aria-label="Afficher le mot de passe">
+              <i class="fa-solid fa-eye"></i>
+            </button>
           </div>
           <span class="form-hint">Minimum 8 caractères</span>
           <span class="form-error" id="err-signup-pass"></span>
         </div>
 
-        <div id="signup-error" style="display:none;padding:.625rem;background:#fee2e2;border-radius:var(--radius-sm);color:#991b1b;font-size:.875rem;margin-bottom:1rem"></div>
+        <div id="signup-error" style="display:none;padding:.625rem;background:#fee2e2;border-radius:var(--radius-sm);color:#991b1b;font-size:.875rem;margin-bottom:1rem;border-left:4px solid var(--red)">
+          <i class="fa-solid fa-circle-exclamation" style="margin-right:.3rem"></i><span id="signup-error-text"></span>
+        </div>
         <div id="signup-success" style="display:none;padding:.625rem;background:var(--green-100);border-radius:var(--radius-sm);color:var(--green-800);font-size:.875rem;margin-bottom:1rem">
-          ✅ Compte créé avec succès !
+          <i class="fa-solid fa-circle-check" style="margin-right:.3rem"></i>Compte créé avec succès !
         </div>
 
         <button type="submit" class="btn btn-primary" style="width:100%;font-size:1rem" id="signup-btn">
-          <span data-i18n="auth_signup">Créer un compte</span>
+          <i class="fa-solid fa-user-plus"></i>&nbsp;<span data-i18n="auth_signup">Créer un compte</span>
         </button>
+
+        <div class="divider-or">Rejoindre l'équipe ?</div>
+        <a href="apply.html" class="btn btn-outline" style="width:100%;font-size:.9rem">
+          <i class="fa-solid fa-hard-hat"></i>&nbsp;Postuler comme agent CleanCam
+        </a>
       </form>
     </div>
 
     <div style="margin-top:1.25rem;text-align:center">
-      <a href="../index.html" style="font-size:.875rem;color:var(--grey-500)">← Retour à l'accueil</a>
+      <a href="../index.html" style="font-size:.875rem;color:var(--grey-500)">
+        <i class="fa-solid fa-arrow-left" style="margin-right:.3rem"></i>Retour à l'accueil
+      </a>
     </div>
   </div>
 </div>
@@ -136,7 +196,7 @@
 <div id="toast-container"></div>
 <div class="loading-overlay" id="loading"><div class="spinner-lg"></div></div>
 
-<!-- Firebase SDK v10 (compat) -->
+<!-- Firebase SDK v10 -->
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
@@ -146,7 +206,6 @@
 <script src="../js/i18n.js"></script>
 <script src="../js/firebase-client.js"></script>
 <script src="../js/offline.js"></script>
-<script src="../js/ai.js"></script>
 <script src="../js/app.js"></script>
 <script>
 // ── Tab switching ─────────────────────────────────────────
@@ -160,7 +219,9 @@ function switchTab(tab) {
 function togglePwd(id, btn) {
   const inp = document.getElementById(id);
   inp.type = inp.type === 'password' ? 'text' : 'password';
-  btn.textContent = inp.type === 'password' ? '👁' : '🙈';
+  btn.innerHTML = inp.type === 'password'
+    ? '<i class="fa-solid fa-eye"></i>'
+    : '<i class="fa-solid fa-eye-slash"></i>';
 }
 
 // ── Login ─────────────────────────────────────────────────
@@ -169,26 +230,34 @@ async function handleLogin(e) {
   const email = document.getElementById('login-email').value.trim();
   const pass  = document.getElementById('login-pass').value;
   const errEl = document.getElementById('login-error');
+  const errTx = document.getElementById('login-error-text');
   errEl.style.display = 'none';
 
   if (!email || !pass) {
-    errEl.textContent = 'Veuillez remplir tous les champs.';
+    errTx.textContent = 'Veuillez remplir tous les champs.';
     errEl.style.display = 'block';
     return;
   }
 
   const btn = document.getElementById('login-btn');
   btn.disabled = true;
-  btn.textContent = '⏳ Connexion…';
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>&nbsp;Connexion…';
 
   try {
-    await window.db.signIn(email, pass);
-    window.location.href = 'dashboard.html';
+    const { user } = await window.db.signIn(email, pass);
+    // Redirect based on role
+    if (user.isAdmin || user.role === 'admin' || user.role === 'officer') {
+      window.location.href = 'dashboard.html';
+    } else if (user.isWorker) {
+      window.location.href = 'dashboard.html';
+    } else {
+      window.location.href = 'dashboard.html';
+    }
   } catch (err) {
-    errEl.textContent = err.message;
+    errTx.textContent = err.message;
     errEl.style.display = 'block';
     btn.disabled = false;
-    btn.innerHTML = '<span data-i18n="auth_login">Se connecter</span>';
+    btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i>&nbsp;<span>Se connecter</span>';
   }
 }
 
@@ -201,36 +270,55 @@ async function handleSignup(e) {
   const lang  = document.getElementById('signup-lang').value;
   const pass  = document.getElementById('signup-pass').value;
   const errEl = document.getElementById('signup-error');
+  const errTx = document.getElementById('signup-error-text');
   const sucEl = document.getElementById('signup-success');
   errEl.style.display = 'none';
   sucEl.style.display = 'none';
 
   if (!name || !email || !pass) {
-    errEl.textContent = 'Veuillez remplir les champs obligatoires.';
+    errTx.textContent = 'Veuillez remplir les champs obligatoires.';
     errEl.style.display = 'block';
     return;
   }
   if (pass.length < 8) {
-    errEl.textContent = 'Le mot de passe doit contenir au moins 8 caractères.';
+    errTx.textContent = 'Le mot de passe doit contenir au moins 8 caractères.';
     errEl.style.display = 'block';
     return;
   }
 
   const btn = document.getElementById('signup-btn');
   btn.disabled = true;
-  btn.textContent = '⏳ Création…';
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>&nbsp;Création…';
 
   try {
     await window.db.signUp(email, pass, { name, phone, language: lang, role: 'citizen' });
     sucEl.style.display = 'block';
     setTimeout(() => window.location.href = 'dashboard.html', 1500);
   } catch (err) {
-    errEl.textContent = err.message;
+    errTx.textContent = err.message;
     errEl.style.display = 'block';
     btn.disabled = false;
-    btn.innerHTML = '<span data-i18n="auth_signup">Créer un compte</span>';
+    btn.innerHTML = '<i class="fa-solid fa-user-plus"></i>&nbsp;<span>Créer un compte</span>';
   }
 }
+
+// ── Handle redirect param (optional login) ─────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  const params = new URLSearchParams(window.location.search);
+  const redirect = params.get('redirect');
+  const reason   = params.get('reason');
+  if (reason === 'admin') {
+    document.querySelector('.auth-card').insertAdjacentHTML('afterbegin', `
+      <div style="background:#fef9c3;border:1.5px solid #fde68a;border-radius:var(--radius-md);padding:.75rem 1rem;margin-bottom:1.25rem;font-size:.85rem;color:#78350f">
+        <i class="fa-solid fa-shield-halved" style="margin-right:.4rem"></i>
+        Connexion administrateur requise pour accéder au tableau de bord.
+      </div>
+    `);
+  }
+  if (redirect) {
+    window._loginRedirect = redirect;
+  }
+});
 </script>
 </body>
 </html>

@@ -1071,10 +1071,182 @@
     return [headers.join(','), ...rows].join('\n');
   }
 
+  // ── Worker Accounts API (Admin-only) ───────────────────────
+  const LS_WORKERS = 'cc_workers_v1';
+  const LS_APPLICATIONS = 'cc_applications_v1';
+
+  async function createWorkerAccount(payload) {
+    if (!payload.id) payload.id = 'wrk_' + Date.now();
+    if (!payload.created_at) payload.created_at = new Date().toISOString();
+    if (!payload.role) payload.role = 'collector';
+    if (!payload.status) payload.status = 'active';
+    // Hash password in a simple way (this is demo; in production use proper hashing)
+    payload.password_hash = btoa(payload.password || '').replace(/=/g, '');
+
+    const workers = loadLocal(LS_WORKERS, []);
+    const existing = workers.find(w => w.email === payload.email);
+    if (existing) throw new Error('Un compte avec cet e-mail existe déjà.');
+    workers.unshift(payload);
+    saveLocal(LS_WORKERS, workers);
+
+    // Also try Firestore
+    if (_firestore) {
+      try {
+        const { password, password_hash, ...safePayload } = payload;
+        await _firestore.collection('workers').doc(payload.id).set(safePayload, { merge: true });
+      } catch (_) {}
+    }
+    return payload;
+  }
+
+  async function getAllWorkers() {
+    const workers = loadLocal(LS_WORKERS, []);
+    return workers.map(w => {
+      const { password, password_hash, ...safe } = w;
+      return safe;
+    });
+  }
+
+  async function updateWorker(id, updates) {
+    const workers = loadLocal(LS_WORKERS, []);
+    const idx = workers.findIndex(w => w.id === id);
+    if (idx < 0) throw new Error('Worker not found');
+    workers[idx] = { ...workers[idx], ...updates, updated_at: new Date().toISOString() };
+    saveLocal(LS_WORKERS, workers);
+    if (_firestore) {
+      try { await _firestore.collection('workers').doc(id).update(updates); } catch (_) {}
+    }
+    return workers[idx];
+  }
+
+  async function deleteWorker(id) {
+    const workers = loadLocal(LS_WORKERS, []);
+    const filtered = workers.filter(w => w.id !== id);
+    saveLocal(LS_WORKERS, filtered);
+    if (_firestore) {
+      try { await _firestore.collection('workers').doc(id).delete(); } catch (_) {}
+    }
+  }
+
+  async function workerSignIn(email, password) {
+    const workers = loadLocal(LS_WORKERS, []);
+    const worker = workers.find(w => w.email === email && w.status === 'active');
+    if (!worker) throw new Error('Compte introuvable ou désactivé.');
+    const hash = btoa(password).replace(/=/g, '');
+    if (worker.password_hash !== hash) throw new Error('Mot de passe incorrect.');
+    const session = {
+      uid: worker.id,
+      email: worker.email,
+      displayName: worker.name,
+      role: worker.role,
+      isWorker: true
+    };
+    saveLocal(LS_SESSION, session);
+    return { user: session };
+  }
+
+  // ── Admin Credentials API ───────────────────────────────────
+  const LS_ADMIN_CREDS = 'cc_admin_creds_v1';
+
+  function getAdminCredentials() {
+    return loadLocal(LS_ADMIN_CREDS, {
+      email: CC.ADMIN_EMAIL,
+      name: 'Administrateur CleanCam',
+      updated_at: null
+    });
+  }
+
+  async function updateAdminCredentials(currentPassword, newEmail, newPassword, newName) {
+    const creds = getAdminCredentials();
+    // Verify current password
+    const storedPwd = loadLocal(LS_ADMIN_CREDS, null)?.password || CC.ADMIN_PASSWORD;
+    if (currentPassword !== storedPwd) {
+      throw new Error('Mot de passe actuel incorrect.');
+    }
+    const updated = {
+      email: newEmail || creds.email,
+      name: newName || creds.name,
+      password: newPassword || storedPwd,
+      updated_at: new Date().toISOString()
+    };
+    saveLocal(LS_ADMIN_CREDS, updated);
+
+    // Update Firebase Auth if available
+    if (_currentUser && _auth) {
+      try {
+        if (newEmail && newEmail !== _currentUser.email) {
+          await _currentUser.updateEmail(newEmail);
+        }
+        if (newPassword) {
+          await _currentUser.updatePassword(newPassword);
+        }
+        if (newName) {
+          await _currentUser.updateProfile({ displayName: newName });
+        }
+      } catch (err) {
+        console.warn('Firebase credential update notice:', err.message);
+      }
+    }
+    // Update current session
+    const session = loadLocal(LS_SESSION, null);
+    if (session) {
+      session.email = updated.email;
+      session.displayName = updated.name;
+      saveLocal(LS_SESSION, session);
+    }
+    return updated;
+  }
+
+  // Override signIn to also check updated admin credentials
+  const _originalSignIn = signIn;
+  async function signInWithAdminOverride(email, password) {
+    // Check updated admin creds first
+    const adminCreds = getAdminCredentials();
+    if (email === adminCreds.email) {
+      const storedPwd = loadLocal(LS_ADMIN_CREDS, null)?.password || CC.ADMIN_PASSWORD;
+      if (password === storedPwd) {
+        const demoUser = {
+          uid: 'officer-demo-uuid',
+          email: adminCreds.email,
+          user_metadata: { name: adminCreds.name || 'Administrateur CleanCam' },
+          role: 'admin',
+          isAdmin: true
+        };
+        saveLocal(LS_SESSION, { ...demoUser, isDemoAdmin: true });
+        return { user: demoUser, session: { user: demoUser } };
+      }
+    }
+    // Check worker accounts
+    try {
+      return await workerSignIn(email, password);
+    } catch (_) {}
+    // Fall back to original
+    return _originalSignIn(email, password);
+  }
+
+  // ── Applications API ───────────────────────────────────────
+  async function getAllApplications() {
+    const apps = loadLocal(LS_APPLICATIONS, []);
+    return apps.sort((a, b) => new Date(b.submitted_at) - new Date(a.submitted_at));
+  }
+
+  async function updateApplicationStatus(id, status, notes) {
+    const apps = loadLocal(LS_APPLICATIONS, []);
+    const app = apps.find(a => a.id === id);
+    if (app) {
+      app.status = status;
+      app.admin_notes = notes || '';
+      app.reviewed_at = new Date().toISOString();
+      saveLocal(LS_APPLICATIONS, apps);
+    }
+    return app;
+  }
+
   // ── Expose Window.db globally ───────────────────────────────
   window.db = {
     // Auth
-    signUp, signIn, signOut, getSession, getUser,
+    signUp, signIn: signInWithAdminOverride, signOut, getSession, getUser,
+    workerSignIn,
     // Reports
     createReport, getMyReports, getReportById, getAllReports, updateReportStatus, getStatusLog,
     // Media & Storage
@@ -1089,10 +1261,24 @@
     getAlerts, getAllAlerts, acknowledgeAlert, createAlert, simulatePM25Spike, simulateDrainWaterSurge,
     // Stats & Export
     getStats, exportReportsCSV,
+    // Worker accounts (Admin only)
+    createWorkerAccount, getAllWorkers, updateWorker, deleteWorker,
+    // Admin credentials
+    getAdminCredentials, updateAdminCredentials,
+    // Applications
+    getAllApplications, updateApplicationStatus,
     // Backwards compatibility alias
     getSupabase: () => null,
-    getFirebase: () => ({ auth: _auth, firestore: _firestore, storage: _storage })
+    getFirebase: () => ({ auth: _auth, firestore: _firestore, storage: _storage }),
+    _firestore: null // set internally, exposed for apply.html
   };
+
+  // Expose _firestore through db after init
+  const _origInitFirebase = window.initFirebase;
+  Object.defineProperty(window.db, '_firestore', {
+    get: () => _firestore,
+    configurable: true
+  });
 
   console.log('CleanCam Firebase & Data Layer initialized successfully.');
 })();

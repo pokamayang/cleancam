@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rejoindre CleanCam – Postuler comme Agent de terrain</title>
+<link rel="icon" type="image/svg+xml" href="../assets/icons/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-Avb2QiuDEEvB4bZJYdft2mNjVShBftLdPG8FJ0V7irTLQ8Uo0qcPxh4Plq7G5tGm0rU+1SPhVotteLpBERwTkw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<link rel="stylesheet" href="../css/main.css">
+<style>
+  .apply-hero {
+    background: linear-gradient(135deg, var(--green-900) 0%, var(--green-700) 100%);
+    color: white;
+    padding: 5rem 1.25rem 4rem;
+    text-align: center;
+  }
+  .apply-hero h1 { color: white; font-size: clamp(1.75rem, 4vw, 2.75rem); }
+  .apply-hero p  { color: rgba(255,255,255,.85); max-width: 580px; margin: 1rem auto 0; font-size: 1.1rem; }
+  .apply-hero .hero-badge { background: rgba(255,255,255,.15); color: white; border: 1px solid rgba(255,255,255,.3); }
+
+  .apply-section { padding: 4rem 1.25rem; background: var(--green-50); }
+  .apply-grid    { display: grid; grid-template-columns: 1fr 1.6fr; gap: 3rem; align-items: start; }
+  @media(max-width:900px){ .apply-grid { grid-template-columns: 1fr; } }
+
+  .apply-info-card { background: white; border-radius: var(--radius-xl); box-shadow: var(--shadow-md); padding: 2rem; }
+  .apply-info-card h3 { margin-bottom: 1.5rem; color: var(--green-800); display: flex; align-items: center; gap: .5rem; }
+
+  .role-card {
+    display: flex; align-items: flex-start; gap: 1rem;
+    padding: 1rem; border-radius: var(--radius-md);
+    border: 1.5px solid var(--green-100); margin-bottom: .875rem;
+    transition: border-color var(--transition), background var(--transition);
+  }
+  .role-card:hover { border-color: var(--green-400); background: var(--green-50); }
+  .role-icon {
+    width: 44px; height: 44px; border-radius: var(--radius-sm);
+    background: var(--green-100); display: flex; align-items: center;
+    justify-content: center; flex-shrink: 0; font-size: 1.25rem; color: var(--green-700);
+  }
+  .role-card h4 { font-size: .95rem; margin-bottom: .2rem; }
+  .role-card p  { font-size: .82rem; color: var(--grey-600); margin: 0; }
+
+  .perk-row { display: flex; align-items: center; gap: .625rem; margin-bottom: .625rem; font-size: .9rem; }
+  .perk-icon { color: var(--green-600); font-size: 1rem; width: 20px; }
+
+  /* Multi-step form */
+  .form-steps { display: flex; align-items: center; margin-bottom: 2rem; gap: 0; }
+  .fstep {
+    flex: 1; text-align: center; font-size: .78rem; font-weight: 600;
+    color: var(--grey-400); padding: .5rem .25rem; position: relative;
+  }
+  .fstep.active { color: var(--green-700); }
+  .fstep.done   { color: var(--green-500); }
+  .fstep-num {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--grey-200); color: var(--grey-500);
+    display: flex; align-items: center; justify-content: center;
+    font-size: .78rem; font-weight: 700; margin: 0 auto .35rem;
+    transition: background var(--transition), color var(--transition);
+  }
+  .fstep.active .fstep-num { background: var(--green-600); color: white; }
+  .fstep.done   .fstep-num { background: var(--green-500); color: white; }
+  .fstep-line { flex: 0 0 24px; height: 2px; background: var(--grey-200); }
+  .fstep-line.done { background: var(--green-500); }
+
+  .form-step-panel { display: none; }
+  .form-step-panel.active { display: block; animation: fadeInUp .35s ease both; }
+
+  .apply-form-card { background: white; border-radius: var(--radius-xl); box-shadow: var(--shadow-md); padding: 2rem; }
+  .apply-form-card h3 { margin-bottom: 1.5rem; color: var(--green-800); font-size: 1.15rem; }
+
+  .skill-tags { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .5rem; }
+  .skill-tag  {
+    padding: .3rem .75rem; border-radius: 99px;
+    border: 1.5px solid var(--grey-300); font-size: .82rem; cursor: pointer;
+    transition: all var(--transition); background: white; color: var(--grey-700);
+  }
+  .skill-tag.selected { background: var(--green-600); color: white; border-color: var(--green-600); }
+
+  .success-card {
+    text-align: center; padding: 3rem 2rem;
+  }
+  .success-icon { font-size: 4rem; margin-bottom: 1rem; }
+  .success-ref  {
+    font-size: 1.75rem; font-weight: 800; color: var(--green-700);
+    background: var(--green-50); border-radius: var(--radius-md);
+    padding: .5rem 1.25rem; display: inline-block; margin: 1rem 0;
+    letter-spacing: .05em;
+  }
+
+  .contact-box {
+    background: var(--green-900); color: white;
+    border-radius: var(--radius-xl); padding: 2rem 2.5rem;
+    margin-top: 2rem; display: flex; align-items: center; gap: 2rem; flex-wrap: wrap;
+  }
+  .contact-box h3 { color: white; margin-bottom: .5rem; }
+  .contact-box p  { color: rgba(255,255,255,.8); margin: 0; font-size: .9rem; }
+  .contact-box a  { color: var(--green-400); font-weight: 700; }
+  .contact-email-pill {
+    display: inline-flex; align-items: center; gap: .5rem;
+    background: rgba(255,255,255,.12); border: 1.5px solid rgba(255,255,255,.25);
+    color: white; border-radius: 99px; padding: .5rem 1.25rem;
+    font-size: .9rem; font-weight: 600; margin-top: .625rem;
+  }
+  .contact-email-pill i { color: var(--green-400); }
+</style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar" id="navbar">
+  <a href="../index.html" class="navbar-brand">
+    <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="16" cy="16" r="16" fill="#16a34a"/>
+      <path d="M8 20c2-4 4-8 8-10 4 2 6 6 8 10" stroke="white" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+      <circle cx="16" cy="13" r="3" fill="white"/>
+      <path d="M10 24h12" stroke="white" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+    CleanCam
+  </a>
+  <ul class="navbar-links" id="nav-links">
+    <li><a href="../index.html" data-i18n="nav_home">Accueil</a></li>
+    <li><a href="report.html" data-i18n="nav_report">Signaler</a></li>
+    <li><a href="map.html" data-i18n="nav_map">Carte</a></li>
+    <li><a href="apply.html" class="active" style="color:var(--green-600)"><i class="fa-solid fa-hard-hat" style="margin-right:.3rem"></i>Rejoindre l'équipe</a></li>
+    <li id="nav-auth-login"><a href="login.html"><i class="fa-solid fa-right-to-bracket" style="margin-right:.3rem"></i><span data-i18n="nav_login">Connexion</span></a></li>
+    <li id="nav-auth-logout" style="display:none"><a href="#" onclick="handleLogout()"><i class="fa-solid fa-right-from-bracket" style="margin-right:.3rem"></i><span data-i18n="nav_logout">Déconnexion</span></a></li>
+  </ul>
+  <div class="navbar-actions">
+    <button class="lang-toggle" onclick="toggleLang()" id="lang-btn">
+      <i class="fa-solid fa-earth-africa"></i> <span data-i18n="lang_toggle">Français</span>
+    </button>
+    <a href="report.html" class="btn btn-primary btn-sm"><i class="fa-solid fa-camera" style="margin-right:.3rem"></i><span data-i18n="nav_report">Signaler</span></a>
+    <button class="hamburger" id="hamburger" aria-label="Toggle menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div id="offline-badge" role="status" aria-live="polite"></div>
+
+<!-- Hero -->
+<section class="apply-hero page-content">
+  <div class="container">
+    <div class="hero-badge" style="background:rgba(255,255,255,.15);color:white;border:1px solid rgba(255,255,255,.3);margin-bottom:1.25rem;display:inline-flex">
+      <i class="fa-solid fa-leaf"></i> &nbsp;Opportunités d'emploi CleanCam
+    </div>
+    <h1><i class="fa-solid fa-hard-hat" style="font-size:.8em;margin-right:.4rem;color:var(--green-300)"></i>Devenez Agent de Terrain CleanCam</h1>
+    <p>Rejoignez notre réseau d'agents municipaux, collecteurs et opérateurs sur le terrain pour améliorer l'environnement urbain au Cameroun.</p>
+    <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;margin-top:2rem">
+      <a href="#apply-form" class="btn btn-primary btn-lg" onclick="document.getElementById('apply-form').scrollIntoView({behavior:'smooth'}); return false;">
+        <i class="fa-solid fa-file-pen"></i>&nbsp;Postuler maintenant
+      </a>
+      <a href="mailto:careers@cleancam.cm" class="btn btn-outline btn-lg" style="color:white;border-color:rgba(255,255,255,.5)">
+        <i class="fa-solid fa-envelope"></i>&nbsp;careers@cleancam.cm
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- Roles & Perks -->
+<section class="apply-section">
+  <div class="container">
+    <div class="apply-grid">
+
+      <!-- Left: Roles & Info -->
+      <div>
+        <div class="apply-info-card reveal">
+          <h3><i class="fa-solid fa-briefcase" style="color:var(--green-600)"></i>&nbsp;Rôles disponibles</h3>
+
+          <div class="role-card">
+            <div class="role-icon"><i class="fa-solid fa-truck-ramp-box"></i></div>
+            <div>
+              <h4>Agent collecteur de déchets</h4>
+              <p>Ramassage des déchets signalés, rapport de terrain quotidien, gestion de tournées.</p>
+            </div>
+          </div>
+          <div class="role-card">
+            <div class="role-icon"><i class="fa-solid fa-water"></i></div>
+            <div>
+              <h4>Technicien DrainageGuard</h4>
+              <p>Maintenance des capteurs de caniveaux, curage préventif, rapport de blocages.</p>
+            </div>
+          </div>
+          <div class="role-card">
+            <div class="role-icon"><i class="fa-solid fa-magnifying-glass-location"></i></div>
+            <div>
+              <h4>Inspecteur terrain / Agent de salubrité</h4>
+              <p>Vérification terrain des signalements, photos, géolocalisation et classification des incidents.</p>
+            </div>
+          </div>
+          <div class="role-card">
+            <div class="role-icon"><i class="fa-solid fa-headset"></i></div>
+            <div>
+              <h4>Opérateur guichet communal</h4>
+              <p>Réception des signalements téléphoniques et radio, saisie dans le système CleanCam.</p>
+            </div>
+          </div>
+          <div class="role-card">
+            <div class="role-icon"><i class="fa-solid fa-chart-bar"></i></div>
+            <div>
+              <h4>Analyste données environnementales</h4>
+              <p>Analyse des hotspots, rapports d'impact, recommandations politiques municipales.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="apply-info-card reveal" style="margin-top:1.5rem">
+          <h3><i class="fa-solid fa-star" style="color:var(--green-600)"></i>&nbsp;Pourquoi rejoindre CleanCam ?</h3>
+          <div class="perk-row"><i class="fa-solid fa-check-circle perk-icon"></i><span>Salaire compétitif et primes de performance terrain</span></div>
+          <div class="perk-row"><i class="fa-solid fa-check-circle perk-icon"></i><span>Équipement professionnel fourni (EPI, tablette)</span></div>
+          <div class="perk-row"><i class="fa-solid fa-check-circle perk-icon"></i><span>Formation complète à l'utilisation du système CleanCam</span></div>
+          <div class="perk-row"><i class="fa-solid fa-check-circle perk-icon"></i><span>Impact direct sur la qualité de vie des quartiers</span></div>
+          <div class="perk-row"><i class="fa-solid fa-check-circle perk-icon"></i><span>Horaires flexibles selon les besoins du district</span></div>
+          <div class="perk-row"><i class="fa-solid fa-check-circle perk-icon"></i><span>Évolution possible vers des postes de supervision</span></div>
+        </div>
+
+        <!-- Contact box -->
+        <div class="contact-box reveal">
+          <div style="font-size:2.5rem"><i class="fa-solid fa-envelope-open-text" style="color:var(--green-400)"></i></div>
+          <div style="flex:1">
+            <h3><i class="fa-solid fa-buildings" style="font-size:.8em;margin-right:.4rem"></i>Vous êtes une entreprise ?</h3>
+            <p>Partenariats, contrats de collecte municipaux et collaborations institutionnelles.</p>
+            <div style="display:flex;flex-wrap:wrap;gap:.625rem;margin-top:.875rem">
+              <a href="mailto:partnerships@cleancam.cm" class="contact-email-pill">
+                <i class="fa-solid fa-handshake"></i> partnerships@cleancam.cm
+              </a>
+              <a href="mailto:info@cleancam.cm" class="contact-email-pill">
+                <i class="fa-solid fa-info-circle"></i> info@cleancam.cm
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Application Form -->
+      <div id="apply-form">
+        <div class="apply-form-card reveal">
+          <h3><i class="fa-solid fa-file-pen" style="color:var(--green-600)"></i>&nbsp;Formulaire de candidature</h3>
+
+          <!-- Step indicators -->
+          <div class="form-steps" id="form-steps">
+            <div class="fstep active" id="fstep-1"><div class="fstep-num">1</div>Profil</div>
+            <div class="fstep-line"></div>
+            <div class="fstep" id="fstep-2"><div class="fstep-num">2</div>Expérience</div>
+            <div class="fstep-line"></div>
+            <div class="fstep" id="fstep-3"><div class="fstep-num">3</div>Disponibilité</div>
+            <div class="fstep-line"></div>
+            <div class="fstep" id="fstep-4"><div class="fstep-num">4</div>Révision</div>
+          </div>
+
+          <!-- Error / success banner -->
+          <div id="app-error" style="display:none;padding:.625rem .875rem;background:#fee2e2;border-radius:var(--radius-sm);color:#991b1b;font-size:.875rem;margin-bottom:1rem;border-left:4px solid var(--red)">
+            <i class="fa-solid fa-circle-exclamation"></i>&nbsp;<span id="app-error-text"></span>
+          </div>
+
+          <!-- STEP 1 – Personal Info -->
+          <div class="form-step-panel active" id="fpanel-1">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+              <div class="form-group">
+                <label class="form-label"><i class="fa-solid fa-user" style="color:var(--green-600);margin-right:.3rem"></i>Prénom *</label>
+                <input class="form-control" type="text" id="a-fname" placeholder="Jean-Pierre" required autocomplete="given-name">
+              </div>
+              <div class="form-group">
+                <label class="form-label"><i class="fa-solid fa-user" style="color:var(--green-600);margin-right:.3rem"></i>Nom *</label>
+                <input class="form-control" type="text" id="a-lname" placeholder="Kamga" required autocomplete="family-name">
+              </div>
+            </div>
+            <div class="form-group" style="margin-bottom:1rem">
+              <label class="form-label"><i class="fa-solid fa-envelope" style="color:var(--green-600);margin-right:.3rem"></i>Adresse e-mail *</label>
+              <input class="form-control" type="email" id="a-email" placeholder="votre@email.cm" required autocomplete="email">
+              <span class="form-hint">Utilisé pour vous envoyer la confirmation de votre candidature</span>
+            </div>
+            <div class="form-group" style="margin-bottom:1rem">
+              <label class="form-label"><i class="fa-solid fa-phone" style="color:var(--green-600);margin-right:.3rem"></i>Téléphone *</label>
+              <input class="form-control" type="tel" id="a-phone" placeholder="+237 6xx xxx xxx" required autocomplete="tel">
+            </div>
+            <div class="form-group" style="margin-bottom:1rem">
+              <label class="form-label"><i class="fa-solid fa-location-dot" style="color:var(--green-600);margin-right:.3rem"></i>Quartier / Ville de résidence *</label>
+              <select class="form-control" id="a-location" required>
+                <option value="">Choisir votre secteur…</option>
+                <optgroup label="Douala">
+                  <option value="Akwa, Douala">Akwa</option>
+                  <option value="Bonanjo, Douala">Bonanjo</option>
+                  <option value="Deido, Douala">Deido</option>
+                  <option value="New Bell, Douala">New Bell</option>
+                  <option value="Banya-Sable, Douala">Banya-Sable</option>
+                  <option value="Makepe, Douala">Makepe</option>
+                  <option value="Bonabéri, Douala">Bonabéri</option>
+                  <option value="Bonamoussadi, Douala">Bonamoussadi</option>
+                </optgroup>
+                <optgroup label="Yaoundé">
+                  <option value="Mokolo, Yaoundé">Mokolo</option>
+                  <option value="Briqueterie, Yaoundé">Briqueterie</option>
+                  <option value="Mvog-Ada, Yaoundé">Mvog-Ada</option>
+                  <option value="Nlongkak, Yaoundé">Nlongkak</option>
+                  <option value="Obili, Yaoundé">Obili</option>
+                  <option value="Biyem-Assi, Yaoundé">Biyem-Assi</option>
+                  <option value="Melen, Yaoundé">Melen</option>
+                </optgroup>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom:1.5rem">
+              <label class="form-label"><i class="fa-solid fa-hard-hat" style="color:var(--green-600);margin-right:.3rem"></i>Poste visé *</label>
+              <select class="form-control" id="a-role" required>
+                <option value="">Sélectionner un rôle…</option>
+                <option value="collector">🗑️ Agent collecteur de déchets</option>
+                <option value="drainage_tech">💧 Technicien DrainageGuard</option>
+                <option value="inspector">🔍 Inspecteur terrain / Salubrité</option>
+                <option value="clerk">📞 Opérateur guichet communal</option>
+                <option value="analyst">📊 Analyste données environnementales</option>
+              </select>
+            </div>
+            <button type="button" class="btn btn-primary" style="width:100%" onclick="nextStep(1)">
+              Suivant <i class="fa-solid fa-arrow-right"></i>
+            </button>
+          </div>
+
+          <!-- STEP 2 – Experience & Skills -->
+          <div class="form-step-panel" id="fpanel-2">
+            <div class="form-group" style="margin-bottom:1rem">
+              <label class="form-label"><i class="fa-solid fa-graduation-cap" style="color:var(--green-600);margin-right:.3rem"></i>Niveau d'études</label>
+              <select class="form-control" id="a-education">
+                <option value="none">Sans diplôme</option>
+                <option value="bepc">BEPC / Brevet</option>
+                <option value="bac">Baccalauréat</option>
+                <option value="bts">BTS / DUT</option>
+                <option value="licence">Licence / Bachelor</option>
+                <option value="master">Master / Ingénieur</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom:1rem">
+              <label class="form-label"><i class="fa-solid fa-briefcase" style="color:var(--green-600);margin-right:.3rem"></i>Années d'expérience dans le domaine</label>
+              <select class="form-control" id="a-experience">
+                <option value="0">Débutant (0 ans)</option>
+                <option value="1-2">1 – 2 ans</option>
+                <option value="3-5">3 – 5 ans</option>
+                <option value="5+">Plus de 5 ans</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom:1rem">
+              <label class="form-label"><i class="fa-solid fa-tools" style="color:var(--green-600);margin-right:.3rem"></i>Compétences & équipements maîtrisés (sélection multiple)</label>
+              <div class="skill-tags" id="skill-tags">
+                <span class="skill-tag" onclick="toggleSkill(this)" data-val="driving">🚗 Permis / Conduite</span>
+                <span class="skill-tag" onclick="toggleSkill(this)" data-val="smartphone">📱 Smartphone / App mobile</span>
+                <span class="skill-tag" onclick="toggleSkill(this)" data-val="heavy_equipment">🏗️ Engins TP / Tractopelles</span>
+                <span class="skill-tag" onclick="toggleSkill(this)" data-val="plumbing">🔧 Plomberie / Caniveaux</span>
+                <span class="skill-tag" onclick="toggleSkill(this)" data-val="data_entry">🖥️ Saisie informatique</span>
+                <span class="skill-tag" onclick="toggleSkill(this)" data-val="first_aid">🩺 Premiers secours</span>
+                <span class="skill-tag" onclick="toggleSkill(this)" data-val="french">🇫🇷 Français</span>
+                <span class="skill-tag" onclick="toggleSkill(this)" data-val="english">🇬🇧 Anglais</span>
+                <span class="skill-tag" onclick="toggleSkill(this)" data-val="pidgin">🗣️ Pidgin</span>
+              </div>
+            </div>
+            <div class="form-group" style="margin-bottom:1.5rem">
+              <label class="form-label"><i class="fa-solid fa-comment-dots" style="color:var(--green-600);margin-right:.3rem"></i>Motivation (court texte)</label>
+              <textarea class="form-control" id="a-motivation" rows="4" placeholder="Pourquoi souhaitez-vous rejoindre CleanCam ? Qu'est-ce qui vous attire dans ce travail de terrain ?"></textarea>
+            </div>
+            <div style="display:flex;gap:.75rem">
+              <button type="button" class="btn btn-ghost" onclick="prevStep(2)"><i class="fa-solid fa-arrow-left"></i> Retour</button>
+              <button type="button" class="btn btn-primary" style="flex:1" onclick="nextStep(2)">Suivant <i class="fa-solid fa-arrow-right"></i></button>
+            </div>
+          </div>
+
+          <!-- STEP 3 – Availability -->
+          <div class="form-step-panel" id="fpanel-3">
+            <div class="form-group" style="margin-bottom:1rem">
+              <label class="form-label"><i class="fa-solid fa-calendar-check" style="color:var(--green-600);margin-right:.3rem"></i>Disponibilité de début</label>
+              <input class="form-control" type="date" id="a-startdate">
+            </div>
+            <div class="form-group" style="margin-bottom:1rem">
+              <label class="form-label"><i class="fa-solid fa-clock" style="color:var(--green-600);margin-right:.3rem"></i>Type de disponibilité</label>
+              <select class="form-control" id="a-availability">
+                <option value="fulltime">Temps plein (8h/jour)</option>
+                <option value="parttime">Mi-temps (4h/jour)</option>
+                <option value="weekend">Week-end uniquement</option>
+                <option value="flexible">Flexible selon les besoins</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom:1rem">
+              <label class="form-label"><i class="fa-solid fa-motorcycle" style="color:var(--green-600);margin-right:.3rem"></i>Moyen de transport disponible</label>
+              <select class="form-control" id="a-transport">
+                <option value="none">Aucun véhicule personnel</option>
+                <option value="moto">Moto-taxi / Moto personnelle</option>
+                <option value="car">Voiture personnelle</option>
+                <option value="bicycle">Vélo</option>
+                <option value="public">Transports en commun uniquement</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom:1rem">
+              <label class="form-label"><i class="fa-solid fa-map-location-dot" style="color:var(--green-600);margin-right:.3rem"></i>Zones d'intervention préférées</label>
+              <select class="form-control" id="a-zone" multiple style="height:7rem">
+                <option value="douala-akwa">Douala – Akwa / Bonanjo</option>
+                <option value="douala-deido">Douala – Deido / New Bell</option>
+                <option value="douala-makepe">Douala – Makepe / Bonamoussadi</option>
+                <option value="douala-bonaberi">Douala – Bonabéri</option>
+                <option value="yaounde-mokolo">Yaoundé – Mokolo / Briqueterie</option>
+                <option value="yaounde-mvogada">Yaoundé – Mvog-Ada / Nlongkak</option>
+                <option value="yaounde-biyemassi">Yaoundé – Biyem-Assi / Obili</option>
+              </select>
+              <span class="form-hint">Maintenez Ctrl / Cmd pour sélections multiples</span>
+            </div>
+            <div class="form-group" style="margin-bottom:1.5rem">
+              <label class="form-label"><i class="fa-solid fa-id-card" style="color:var(--green-600);margin-right:.3rem"></i>Pièce d'identité</label>
+              <select class="form-control" id="a-id-type">
+                <option value="cni">CNI Camerounaise</option>
+                <option value="passport">Passeport</option>
+                <option value="residence">Titre de séjour</option>
+                <option value="voter">Carte d'électeur</option>
+              </select>
+            </div>
+            <div style="display:flex;gap:.75rem">
+              <button type="button" class="btn btn-ghost" onclick="prevStep(3)"><i class="fa-solid fa-arrow-left"></i> Retour</button>
+              <button type="button" class="btn btn-primary" style="flex:1" onclick="nextStep(3)">Vérifier la candidature <i class="fa-solid fa-arrow-right"></i></button>
+            </div>
+          </div>
+
+          <!-- STEP 4 – Review & Submit -->
+          <div class="form-step-panel" id="fpanel-4">
+            <div id="review-summary" style="background:var(--grey-50);border-radius:var(--radius-md);padding:1.25rem;margin-bottom:1.5rem;font-size:.875rem;line-height:1.6"></div>
+            <div class="form-group" style="margin-bottom:1.5rem">
+              <label style="display:flex;align-items:flex-start;gap:.75rem;cursor:pointer">
+                <input type="checkbox" id="a-consent" style="margin-top:.2rem;accent-color:var(--green-600)">
+                <span style="font-size:.85rem;color:var(--grey-600)">J'accepte que CleanCam conserve mes données de candidature pendant 12 mois et me contacte par e-mail ou téléphone pour le suivi de ma demande. <strong>*</strong></span>
+              </label>
+            </div>
+            <div style="display:flex;gap:.75rem">
+              <button type="button" class="btn btn-ghost" onclick="prevStep(4)"><i class="fa-solid fa-arrow-left"></i> Modifier</button>
+              <button type="button" class="btn btn-primary" style="flex:1" id="submit-app-btn" onclick="submitApplication()">
+                <i class="fa-solid fa-paper-plane"></i>&nbsp;Soumettre ma candidature
+              </button>
+            </div>
+          </div>
+
+          <!-- STEP 5 – Success -->
+          <div class="form-step-panel" id="fpanel-5">
+            <div class="success-card">
+              <div class="success-icon">🎉</div>
+              <h3 style="color:var(--green-700)">Candidature reçue !</h3>
+              <div class="success-ref" id="app-ref-code">APP-XXXX</div>
+              <p style="color:var(--grey-600);margin:.5rem 0 1.5rem">
+                Votre candidature a été enregistrée avec succès. Notre équipe RH vous contactera sous <strong>5 à 10 jours ouvrés</strong> par e-mail ou téléphone.
+              </p>
+              <div style="background:var(--green-50);border-radius:var(--radius-md);padding:1rem;margin-bottom:1.5rem;text-align:left">
+                <p style="font-size:.875rem;color:var(--grey-700);margin:0">
+                  <strong>Questions sur votre candidature ?</strong><br>
+                  Contactez-nous à <a href="mailto:careers@cleancam.cm" style="color:var(--green-700);font-weight:700">careers@cleancam.cm</a>
+                  en indiquant votre code de référence.
+                </p>
+              </div>
+              <a href="../index.html" class="btn btn-primary" style="width:100%"><i class="fa-solid fa-house"></i>&nbsp;Retour à l'accueil</a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Contact section -->
+<section class="section" style="background:white">
+  <div class="container">
+    <h2 class="section-title reveal" style="margin-bottom:.75rem">
+      <i class="fa-solid fa-envelope" style="color:var(--green-600);margin-right:.5rem"></i>Contacts CleanCam
+    </h2>
+    <p class="section-sub reveal">Pour toute demande, partenariat ou candidature</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.5rem;margin-top:2rem">
+      <div class="card reveal" style="text-align:center">
+        <div style="font-size:2.5rem;margin-bottom:.75rem;color:var(--green-600)"><i class="fa-solid fa-hard-hat"></i></div>
+        <h3>Candidatures &amp; Emplois</h3>
+        <p style="font-size:.875rem;margin:.5rem 0 1rem">Postuler comme agent de terrain, technicien ou opérateur CleanCam.</p>
+        <a href="mailto:careers@cleancam.cm" class="btn btn-primary" style="width:100%">
+          <i class="fa-solid fa-envelope"></i>&nbsp;careers@cleancam.cm
+        </a>
+      </div>
+      <div class="card reveal" style="text-align:center;transition-delay:.1s">
+        <div style="font-size:2.5rem;margin-bottom:.75rem;color:var(--green-600)"><i class="fa-solid fa-handshake"></i></div>
+        <h3>Partenariats &amp; Entreprises</h3>
+        <p style="font-size:.875rem;margin:.5rem 0 1rem">Contrats de collecte, partenariats institutionnels et collaborations B2B.</p>
+        <a href="mailto:partnerships@cleancam.cm" class="btn btn-primary" style="width:100%">
+          <i class="fa-solid fa-envelope"></i>&nbsp;partnerships@cleancam.cm
+        </a>
+      </div>
+      <div class="card reveal" style="text-align:center;transition-delay:.2s">
+        <div style="font-size:2.5rem;margin-bottom:.75rem;color:var(--green-600)"><i class="fa-solid fa-circle-info"></i></div>
+        <h3>Informations générales</h3>
+        <p style="font-size:.875rem;margin:.5rem 0 1rem">Presse, questions générales, retours citoyens sur la plateforme.</p>
+        <a href="mailto:info@cleancam.cm" class="btn btn-primary" style="width:100%">
+          <i class="fa-solid fa-envelope"></i>&nbsp;info@cleancam.cm
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer" role="contentinfo">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <div class="footer-brand"><i class="fa-solid fa-leaf" style="color:var(--green-400);margin-right:.4rem"></i>CleanCam Cameroun</div>
+        <p style="font-size:.875rem;margin-bottom:1rem">Plateforme IA de signalement de pollution, surveillance DrainageGuard et cartographie des points chauds pour le Cameroun.</p>
+      </div>
+      <div>
+        <h4>Navigation</h4>
+        <ul>
+          <li><a href="../index.html"><i class="fa-solid fa-house" style="width:14px"></i>&nbsp;Accueil</a></li>
+          <li><a href="report.html"><i class="fa-solid fa-camera" style="width:14px"></i>&nbsp;Signaler</a></li>
+          <li><a href="map.html"><i class="fa-solid fa-map" style="width:14px"></i>&nbsp;Carte</a></li>
+          <li><a href="apply.html"><i class="fa-solid fa-hard-hat" style="width:14px"></i>&nbsp;Rejoindre l'équipe</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Contact</h4>
+        <ul>
+          <li><a href="mailto:careers@cleancam.cm"><i class="fa-solid fa-envelope" style="width:14px"></i>&nbsp;careers@cleancam.cm</a></li>
+          <li><a href="mailto:partnerships@cleancam.cm"><i class="fa-solid fa-handshake" style="width:14px"></i>&nbsp;partnerships@cleancam.cm</a></li>
+          <li><a href="mailto:info@cleancam.cm"><i class="fa-solid fa-circle-info" style="width:14px"></i>&nbsp;info@cleancam.cm</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom flex justify-between flex-wrap gap-1">
+      <span>© 2026 CleanCam. Fait pour le Cameroun.</span>
+      <span>v1.0 · Firebase + Leaflet</span>
+    </div>
+  </div>
+</footer>
+
+<div id="toast-container" aria-live="polite"></div>
+<div class="loading-overlay" id="loading"><div class="spinner-lg"></div></div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-storage-compat.js"></script>
+<script src="../js/config.js"></script>
+<script src="../js/i18n.js"></script>
+<script src="../js/firebase-client.js"></script>
+<script src="../js/offline.js"></script>
+<script src="../js/app.js"></script>
+
+<script>
+// ── Application state ───────────────────────────────────
+const appState = {
+  fname:'', lname:'', email:'', phone:'', location:'', role:'',
+  education:'', experience:'', skills:[], motivation:'',
+  startdate:'', availability:'', transport:'', zones:[], idType:'',
+  currentStep: 1
+};
+
+// ── Skill tag toggle ────────────────────────────────────
+function toggleSkill(el) {
+  el.classList.toggle('selected');
+}
+
+// ── Step navigation ─────────────────────────────────────
+function nextStep(from) {
+  hideError();
+  if (!validateStep(from)) return;
+  collectStep(from);
+  gotoStep(from + 1);
+}
+function prevStep(from) {
+  gotoStep(from - 1);
+}
+
+function gotoStep(n) {
+  document.querySelectorAll('.form-step-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('fpanel-' + n).classList.add('active');
+
+  document.querySelectorAll('.fstep').forEach((el, i) => {
+    const stepNum = i + 1;
+    el.classList.remove('active', 'done');
+    if (stepNum < n)  el.classList.add('done');
+    if (stepNum === n) el.classList.add('active');
+  });
+  document.querySelectorAll('.fstep-line').forEach((el, i) => {
+    el.classList.toggle('done', i + 1 < n);
+  });
+
+  appState.currentStep = n;
+  if (n === 4) buildReview();
+}
+
+function validateStep(step) {
+  if (step === 1) {
+    const fname = document.getElementById('a-fname').value.trim();
+    const lname = document.getElementById('a-lname').value.trim();
+    const email = document.getElementById('a-email').value.trim();
+    const phone = document.getElementById('a-phone').value.trim();
+    const loc   = document.getElementById('a-location').value;
+    const role  = document.getElementById('a-role').value;
+    if (!fname || !lname) return showError('Veuillez saisir votre prénom et nom.');
+    if (!email || !email.includes('@')) return showError('Adresse e-mail invalide.');
+    if (!phone) return showError('Numéro de téléphone requis.');
+    if (!loc)   return showError('Veuillez sélectionner votre quartier de résidence.');
+    if (!role)  return showError('Veuillez sélectionner le poste visé.');
+  }
+  if (step === 4) {
+    if (!document.getElementById('a-consent').checked) return showError('Vous devez accepter les conditions de traitement des données.');
+  }
+  return true;
+}
+
+function collectStep(step) {
+  if (step === 1) {
+    appState.fname    = document.getElementById('a-fname').value.trim();
+    appState.lname    = document.getElementById('a-lname').value.trim();
+    appState.email    = document.getElementById('a-email').value.trim();
+    appState.phone    = document.getElementById('a-phone').value.trim();
+    appState.location = document.getElementById('a-location').value;
+    appState.role     = document.getElementById('a-role').value;
+  }
+  if (step === 2) {
+    appState.education   = document.getElementById('a-education').value;
+    appState.experience  = document.getElementById('a-experience').value;
+    appState.motivation  = document.getElementById('a-motivation').value.trim();
+    appState.skills = [...document.querySelectorAll('.skill-tag.selected')].map(t => t.dataset.val);
+  }
+  if (step === 3) {
+    appState.startdate    = document.getElementById('a-startdate').value;
+    appState.availability = document.getElementById('a-availability').value;
+    appState.transport    = document.getElementById('a-transport').value;
+    appState.idType       = document.getElementById('a-id-type').value;
+    appState.zones = [...document.getElementById('a-zone').selectedOptions].map(o => o.value);
+  }
+}
+
+const roleLabels = {
+  collector:'Agent collecteur de déchets', drainage_tech:'Technicien DrainageGuard',
+  inspector:'Inspecteur terrain / Salubrité', clerk:'Opérateur guichet communal',
+  analyst:'Analyste données environnementales'
+};
+
+function buildReview() {
+  collectStep(3);
+  const r = appState;
+  document.getElementById('review-summary').innerHTML = `
+    <table style="width:100%;border-collapse:collapse">
+      <tr><td style="padding:.3rem 0;color:var(--grey-500);width:140px">Nom complet</td><td style="font-weight:600">${r.fname} ${r.lname}</td></tr>
+      <tr><td style="padding:.3rem 0;color:var(--grey-500)">E-mail</td><td>${r.email}</td></tr>
+      <tr><td style="padding:.3rem 0;color:var(--grey-500)">Téléphone</td><td>${r.phone}</td></tr>
+      <tr><td style="padding:.3rem 0;color:var(--grey-500)">Localisation</td><td>${r.location}</td></tr>
+      <tr><td style="padding:.3rem 0;color:var(--grey-500)">Poste visé</td><td style="font-weight:600;color:var(--green-700)">${roleLabels[r.role] || r.role}</td></tr>
+      <tr><td style="padding:.3rem 0;color:var(--grey-500)">Études</td><td>${r.education}</td></tr>
+      <tr><td style="padding:.3rem 0;color:var(--grey-500)">Expérience</td><td>${r.experience} an(s)</td></tr>
+      <tr><td style="padding:.3rem 0;color:var(--grey-500)">Compétences</td><td>${r.skills.join(', ') || '—'}</td></tr>
+      <tr><td style="padding:.3rem 0;color:var(--grey-500)">Disponibilité</td><td>${r.availability}</td></tr>
+    </table>
+  `;
+}
+
+async function submitApplication() {
+  if (!validateStep(4)) return;
+  collectStep(3);
+
+  const btn = document.getElementById('submit-app-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>&nbsp;Envoi en cours…';
+
+  const ref = 'APP-' + Math.floor(1000 + Math.random() * 9000);
+
+  // Save application to localStorage (and Firestore if available)
+  const application = {
+    id: 'app_' + Date.now(),
+    ref,
+    ...appState,
+    status: 'pending',
+    submitted_at: new Date().toISOString()
+  };
+
+  try {
+    const apps = JSON.parse(localStorage.getItem('cc_applications_v1') || '[]');
+    apps.unshift(application);
+    localStorage.setItem('cc_applications_v1', JSON.stringify(apps));
+
+    // Save to Firestore if available
+    if (window.db && window.db._firestore) {
+      try {
+        await window.db._firestore.collection('applications').doc(application.id).set(application);
+      } catch (_) {}
+    }
+  } catch (_) {}
+
+  // Show success
+  document.getElementById('app-ref-code').textContent = ref;
+  document.querySelectorAll('.form-step-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('fpanel-5').classList.add('active');
+
+  // Hide step indicators since done
+  document.getElementById('form-steps').style.display = 'none';
+}
+
+function showError(msg) {
+  const el = document.getElementById('app-error');
+  document.getElementById('app-error-text').textContent = msg;
+  el.style.display = 'block';
+  el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  return false;
+}
+function hideError() {
+  document.getElementById('app-error').style.display = 'none';
+}
+</script>
+</body>
+</html>

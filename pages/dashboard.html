@@ -7,8 +7,10 @@
 
 <!-- Leaflet CSS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link rel="icon" type="image/svg+xml" href="../assets/icons/favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-Avb2QiuDEEvB4bZJYdft2mNjVShBftLdPG8FJ0V7irTLQ8Uo0qcPxh4Plq7G5tGm0rU+1SPhVotteLpBERwTkw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 <link rel="stylesheet" href="../css/main.css">
 <style>
 /* ── Dash-specific overrides ──────────────────────────────── */
@@ -82,6 +84,7 @@
       <li class="dash-nav-item"><a href="#" onclick="showPanel('drainage')" id="nav-drainage"><span class="nav-icon">💧</span> DrainageGuard</a></li>
       <li class="dash-nav-item"><a href="#" onclick="showPanel('clerk')" id="nav-clerk"><span class="nav-icon">📝</span> Saisie Guichet / Radio</a></li>
       <li class="dash-nav-item"><a href="#" onclick="showPanel('alerts')" id="nav-alerts"><span class="nav-icon">🔔</span> <span data-i18n="dash_alerts">Alertes</span> <span id="badge-alerts" class="badge badge-red" style="margin-left:auto;display:none">0</span></a></li>
+      <li class="dash-nav-item"><a href="#" onclick="showPanel('workers')" id="nav-workers"><span class="nav-icon">👷</span> Équipe CleanCam <span id="badge-apps" class="badge badge-yellow" style="margin-left:auto;display:none">0</span></a></li>
       <li class="dash-nav-item"><a href="javascript:void(0)" onclick="openTestRunner()"><span class="nav-icon">🧪</span> Tests SRS (T1-T15)</a></li>
       <li class="dash-nav-item"><a href="javascript:void(0)" onclick="openIVR()"><span class="nav-icon">📞</span> Ligne IVR (Demo)</a></li>
       <li class="dash-nav-item" style="margin-top:auto"><a href="#" onclick="showPanel('settings')"><span class="nav-icon">⚙️</span> Paramètres</a></li>
@@ -339,13 +342,81 @@
       <div id="alerts-list"></div>
     </div>
 
+    <!-- ── WORKERS & APPLICATIONS ───────────────────────── -->
+    <div id="panel-workers" class="dash-panel" style="display:none">
+      <div class="dash-section-title" style="margin-bottom:1rem">
+        <h2 style="font-size:1.3rem;margin:0">👷 Équipe CleanCam – Comptes &amp; Candidatures</h2>
+        <button class="btn btn-primary btn-sm" onclick="openCreateWorkerModal()">
+          <span>+</span> Créer un compte agent
+        </button>
+      </div>
+
+      <!-- Sub-tabs -->
+      <div class="tab-bar" style="margin-bottom:1.5rem">
+        <div class="tab active" id="wtab-accounts" onclick="switchWorkerTab('accounts')">👷 Comptes agents</div>
+        <div class="tab" id="wtab-applications" onclick="switchWorkerTab('applications')">📋 Candidatures reçues <span id="badge-apps-tab" class="badge badge-yellow" style="margin-left:.4rem;display:none">0</span></div>
+      </div>
+
+      <!-- Accounts panel -->
+      <div id="worker-accounts-panel">
+        <div class="dash-section" style="padding:1rem">
+          <div id="workers-table-wrap" style="overflow-x:auto">
+            <table class="data-table" id="workers-table">
+              <thead><tr>
+                <th>Nom</th><th>E-mail</th><th>Rôle</th><th>District</th><th>Statut</th><th>Créé le</th><th>Actions</th>
+              </tr></thead>
+              <tbody id="workers-tbody">
+                <tr><td colspan="7" style="text-align:center;color:var(--grey-400);padding:2rem">Chargement…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Applications panel -->
+      <div id="worker-applications-panel" style="display:none">
+        <div id="applications-list"></div>
+      </div>
+    </div>
+
     <!-- ── SETTINGS ──────────────────────────────────────── -->
     <div id="panel-settings" class="dash-panel" style="display:none">
       <div class="dash-section-title" style="margin-bottom:1rem"><h2 style="font-size:1.3rem;margin:0">⚙️ Paramètres</h2></div>
-      <div class="dash-section">
-        <h4 style="margin-bottom:1rem">👤 Mon compte</h4>
-        <div id="user-info-panel" style="display:flex;flex-direction:column;gap:.75rem"></div>
+
+      <!-- Admin credentials (real-time change) -->
+      <div class="dash-section" id="admin-creds-section">
+        <h4 style="margin-bottom:1rem;display:flex;align-items:center;gap:.5rem">
+          <span style="width:32px;height:32px;background:var(--green-100);border-radius:var(--radius-sm);display:inline-flex;align-items:center;justify-content:center;color:var(--green-700)">🔐</span>
+          Modifier mes identifiants administrateur
+        </h4>
+        <form id="admin-creds-form" onsubmit="handleUpdateAdminCreds(event)" novalidate style="max-width:480px">
+          <div class="form-group" style="margin-bottom:1rem">
+            <label class="form-label">E-mail actuel</label>
+            <input class="form-control" type="text" id="current-admin-email" readonly style="background:var(--grey-100);color:var(--grey-500)">
+          </div>
+          <div class="form-group" style="margin-bottom:1rem">
+            <label class="form-label">Mot de passe actuel (requis pour confirmer) *</label>
+            <input class="form-control" type="password" id="cred-current-pass" required placeholder="Votre mot de passe actuel">
+          </div>
+          <div class="form-group" style="margin-bottom:1rem">
+            <label class="form-label">Nouveau nom d'affichage</label>
+            <input class="form-control" type="text" id="cred-new-name" placeholder="Ex : Administrateur – Hôtel de Ville Douala">
+          </div>
+          <div class="form-group" style="margin-bottom:1rem">
+            <label class="form-label">Nouvel e-mail</label>
+            <input class="form-control" type="email" id="cred-new-email" placeholder="nouveau@email.cm">
+          </div>
+          <div class="form-group" style="margin-bottom:1rem">
+            <label class="form-label">Nouveau mot de passe <span style="font-size:.78rem;color:var(--grey-500)">(laisser vide pour conserver l'actuel)</span></label>
+            <input class="form-control" type="password" id="cred-new-pass" placeholder="Min. 8 caractères" minlength="8">
+          </div>
+          <div id="cred-result" style="display:none;margin-bottom:1rem;padding:.625rem;border-radius:var(--radius-sm);font-size:.875rem"></div>
+          <button type="submit" class="btn btn-primary" id="cred-save-btn">
+            Enregistrer les modifications
+          </button>
+        </form>
       </div>
+
       <div class="dash-section">
         <h4 style="margin-bottom:1rem">🌍 Interface</h4>
         <div class="form-group"><label class="form-label">Langue / Language</label>
@@ -389,6 +460,65 @@
 
 <div id="toast-container"></div>
 <div class="loading-overlay" id="loading"><div class="spinner-lg"></div></div>
+
+<!-- Create Worker Account Modal -->
+<div id="worker-modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:2000;display:none;align-items:center;justify-content:center;padding:1rem">
+  <div style="background:var(--white);border-radius:var(--radius-xl);padding:2rem;max-width:500px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
+      <h3 style="margin:0;font-size:1.15rem">👷 Créer un compte agent CleanCam</h3>
+      <button onclick="closeCreateWorkerModal()" class="btn btn-ghost btn-sm" style="font-size:1.1rem">✕</button>
+    </div>
+    <p style="font-size:.85rem;color:var(--grey-500);margin-bottom:1.5rem">
+      Seul l'administrateur peut créer des comptes pour les agents de terrain. L'agent recevra ses identifiants pour se connecter.
+    </p>
+    <form id="create-worker-form" onsubmit="handleCreateWorker(event)" novalidate>
+      <div class="form-group" style="margin-bottom:1rem">
+        <label class="form-label">Nom complet *</label>
+        <input class="form-control" type="text" id="w-name" required placeholder="Marie Nzomo">
+      </div>
+      <div class="form-group" style="margin-bottom:1rem">
+        <label class="form-label">E-mail de connexion *</label>
+        <input class="form-control" type="email" id="w-email" required placeholder="marie.nzomo@cleancam.cm">
+      </div>
+      <div class="form-group" style="margin-bottom:1rem">
+        <label class="form-label">Téléphone</label>
+        <input class="form-control" type="tel" id="w-phone" placeholder="+237 6xx xxx xxx">
+      </div>
+      <div class="form-group" style="margin-bottom:1rem">
+        <label class="form-label">Rôle / Poste *</label>
+        <select class="form-control" id="w-role" required>
+          <option value="collector">🗑️ Agent collecteur</option>
+          <option value="drainage_tech">💧 Technicien DrainageGuard</option>
+          <option value="inspector">🔍 Inspecteur terrain</option>
+          <option value="clerk">📞 Opérateur guichet</option>
+          <option value="analyst">📊 Analyste données</option>
+          <option value="officer">🏛️ Officier municipal</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom:1rem">
+        <label class="form-label">District d'affectation *</label>
+        <select class="form-control" id="w-district" required>
+          <option value="douala">Douala</option>
+          <option value="yaounde">Yaoundé</option>
+          <option value="both">Douala + Yaoundé</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom:1rem">
+        <label class="form-label">Mot de passe temporaire * <span style="font-size:.78rem;color:var(--grey-500)">(à communiquer à l'agent)</span></label>
+        <div style="position:relative">
+          <input class="form-control" type="text" id="w-password" required placeholder="Min. 8 caractères" minlength="8" style="padding-right:7rem">
+          <button type="button" onclick="generateWorkerPass()" class="btn btn-ghost btn-sm" style="position:absolute;right:.35rem;top:50%;transform:translateY(-50%);font-size:.72rem;padding:.2rem .5rem">Générer</button>
+        </div>
+      </div>
+      <div id="worker-create-error" style="display:none;padding:.625rem;background:#fee2e2;border-radius:var(--radius-sm);color:#991b1b;font-size:.875rem;margin-bottom:1rem;border-left:4px solid var(--red)"></div>
+      <div id="worker-create-success" style="display:none;padding:.875rem;background:var(--green-50);border:1.5px solid var(--green-300,#86efac);border-radius:var(--radius-md);font-size:.875rem;color:var(--green-800);margin-bottom:1rem"></div>
+      <div style="display:flex;gap:.75rem">
+        <button type="button" class="btn btn-ghost" onclick="closeCreateWorkerModal()">Annuler</button>
+        <button type="submit" class="btn btn-primary" id="create-worker-btn" style="flex:1">Créer le compte</button>
+      </div>
+    </form>
+  </div>
+</div>
 
 <!-- Scripts -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>

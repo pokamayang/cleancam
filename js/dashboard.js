@@ -955,3 +955,287 @@ function typeEmoji(t) {
     other:               '❓'
   }[t] || '❓';
 }
+
+// ── Workers & Applications Panel ───────────────────────────
+let workerTab = 'accounts';
+
+window.switchWorkerTab = function(tab) {
+  workerTab = tab;
+  document.getElementById('worker-accounts-panel').style.display    = tab === 'accounts'     ? 'block' : 'none';
+  document.getElementById('worker-applications-panel').style.display = tab === 'applications' ? 'block' : 'none';
+  document.getElementById('wtab-accounts').classList.toggle('active',     tab === 'accounts');
+  document.getElementById('wtab-applications').classList.toggle('active', tab === 'applications');
+  if (tab === 'accounts')     loadWorkers();
+  if (tab === 'applications') loadApplications();
+};
+
+async function loadWorkers() {
+  const tbody = document.getElementById('workers-tbody');
+  if (!tbody) return;
+  try {
+    const workers = await window.db.getAllWorkers();
+    if (!workers.length) {
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--grey-400);padding:2rem">
+        <div style="font-size:2rem;margin-bottom:.5rem">👷</div>
+        Aucun compte agent créé.<br>
+        <button class="btn btn-primary btn-sm" style="margin-top:.75rem" onclick="openCreateWorkerModal()">+ Créer le premier compte</button>
+      </td></tr>`;
+      return;
+    }
+    const roleLabels = {
+      collector: '🗑️ Collecteur', drainage_tech: '💧 DrainageGuard', inspector: '🔍 Inspecteur',
+      clerk: '📞 Guichet', analyst: '📊 Analyste', officer: '🏛️ Officier'
+    };
+    tbody.innerHTML = workers.map(w => `
+      <tr>
+        <td><strong>${w.name}</strong></td>
+        <td style="font-size:.85rem">${w.email}</td>
+        <td><span class="badge badge-grey" style="font-size:.72rem">${roleLabels[w.role] || w.role}</span></td>
+        <td style="font-size:.85rem">${w.district || '—'}</td>
+        <td>
+          <span class="badge ${w.status === 'active' ? 'badge-green' : 'badge-red'}" style="font-size:.72rem">
+            ${w.status === 'active' ? '🟢 Actif' : '🔴 Désactivé'}
+          </span>
+        </td>
+        <td style="font-size:.8rem;white-space:nowrap">${fmtDate(w.created_at)}</td>
+        <td>
+          <div style="display:flex;gap:.25rem;flex-wrap:wrap">
+            <button class="btn btn-ghost btn-sm" onclick="toggleWorkerStatus('${w.id}','${w.status}')" title="${w.status === 'active' ? 'Désactiver' : 'Activer'}">
+              ${w.status === 'active' ? '🔴' : '🟢'}
+            </button>
+            <button class="btn btn-danger btn-sm" onclick="confirmDeleteWorker('${w.id}','${w.name}')">🗑</button>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+  } catch (e) {
+    tbody.innerHTML = `<tr><td colspan="7" style="color:var(--grey-500);padding:1rem">${e.message}</td></tr>`;
+  }
+}
+
+window.toggleWorkerStatus = async function(id, currentStatus) {
+  const newStatus = currentStatus === 'active' ? 'disabled' : 'active';
+  await window.db.updateWorker(id, { status: newStatus });
+  showToast(`Compte ${newStatus === 'active' ? 'activé' : 'désactivé'} avec succès.`, 'success');
+  loadWorkers();
+};
+
+window.confirmDeleteWorker = function(id, name) {
+  if (confirm(`Supprimer définitivement le compte de ${name} ?`)) {
+    window.db.deleteWorker(id).then(() => {
+      showToast(`Compte de ${name} supprimé.`, 'success');
+      loadWorkers();
+    });
+  }
+};
+
+window.openCreateWorkerModal = function() {
+  const modal = document.getElementById('worker-modal-overlay');
+  modal.style.display = 'flex';
+  document.getElementById('create-worker-form').reset();
+  document.getElementById('worker-create-error').style.display = 'none';
+  document.getElementById('worker-create-success').style.display = 'none';
+};
+
+window.closeCreateWorkerModal = function() {
+  document.getElementById('worker-modal-overlay').style.display = 'none';
+};
+
+window.generateWorkerPass = function() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789@#!';
+  let pass = '';
+  for (let i = 0; i < 12; i++) pass += chars[Math.floor(Math.random() * chars.length)];
+  document.getElementById('w-password').value = pass;
+};
+
+window.handleCreateWorker = async function(e) {
+  e.preventDefault();
+  const name     = document.getElementById('w-name').value.trim();
+  const email    = document.getElementById('w-email').value.trim();
+  const phone    = document.getElementById('w-phone').value.trim();
+  const role     = document.getElementById('w-role').value;
+  const district = document.getElementById('w-district').value;
+  const password = document.getElementById('w-password').value;
+
+  const errEl = document.getElementById('worker-create-error');
+  const sucEl = document.getElementById('worker-create-success');
+  errEl.style.display = 'none';
+  sucEl.style.display = 'none';
+
+  if (!name || !email || !password || password.length < 8) {
+    errEl.textContent = 'Remplissez tous les champs obligatoires (mot de passe min. 8 caractères).';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  const btn = document.getElementById('create-worker-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Création…';
+
+  try {
+    const worker = await window.db.createWorkerAccount({ name, email, phone, role, district, password });
+    sucEl.innerHTML = `
+      <strong>✅ Compte créé avec succès !</strong><br>
+      <span style="font-size:.8rem;margin-top:.25rem;display:block">
+        Communiquez ces identifiants à l'agent :<br>
+        <code style="background:white;padding:.2rem .5rem;border-radius:4px;font-size:.8rem">📧 ${email}</code>&nbsp;
+        <code style="background:white;padding:.2rem .5rem;border-radius:4px;font-size:.8rem">🔑 ${password}</code>
+      </span>
+    `;
+    sucEl.style.display = 'block';
+    document.getElementById('create-worker-form').reset();
+    loadWorkers();
+    // Update badge
+    checkApplicationBadge();
+  } catch (err) {
+    errEl.textContent = err.message;
+    errEl.style.display = 'block';
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Créer le compte';
+};
+
+// ── Applications Panel ─────────────────────────────────────
+async function loadApplications() {
+  const list = document.getElementById('applications-list');
+  if (!list) return;
+  try {
+    const apps = await window.db.getAllApplications();
+    const badge = document.getElementById('badge-apps-tab');
+    const pending = apps.filter(a => a.status === 'pending').length;
+    if (pending > 0) {
+      badge.textContent = pending;
+      badge.style.display = 'inline-flex';
+    } else {
+      badge.style.display = 'none';
+    }
+
+    if (!apps.length) {
+      list.innerHTML = `<div class="dash-section" style="text-align:center;padding:3rem;color:var(--grey-400)">
+        <div style="font-size:2.5rem;margin-bottom:.75rem">📋</div>
+        Aucune candidature reçue pour l'instant.
+      </div>`;
+      return;
+    }
+    const roleLabels = {
+      collector:'Collecteur', drainage_tech:'DrainageGuard', inspector:'Inspecteur terrain',
+      clerk:'Guichet communal', analyst:'Analyste données'
+    };
+    const statusColors = { pending:'badge-yellow', reviewing:'badge-blue', accepted:'badge-green', rejected:'badge-red' };
+    list.innerHTML = apps.map(a => `
+      <div class="dash-section" style="margin-bottom:1rem">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:.75rem">
+          <div>
+            <div style="display:flex;align-items:center;gap:.625rem;margin-bottom:.25rem">
+              <strong>${a.fname} ${a.lname}</strong>
+              <span class="badge ${statusColors[a.status] || 'badge-grey'}" style="font-size:.72rem">
+                ${a.status === 'pending' ? '⏳ En attente' : a.status === 'accepted' ? '✅ Accepté' : a.status === 'reviewing' ? '👁 En revue' : '❌ Refusé'}
+              </span>
+              <code style="font-size:.7rem;background:var(--grey-100);padding:.1rem .4rem;border-radius:4px">${a.ref}</code>
+            </div>
+            <div style="font-size:.82rem;color:var(--grey-600)">
+              📧 ${a.email} &nbsp;·&nbsp; 📞 ${a.phone} &nbsp;·&nbsp; 📍 ${a.location}
+            </div>
+            <div style="font-size:.82rem;color:var(--grey-600);margin-top:.2rem">
+              🎯 Poste : <strong>${roleLabels[a.role] || a.role}</strong>
+              &nbsp;·&nbsp; ⏱ Dispo : ${a.availability || '—'}
+              &nbsp;·&nbsp; Soumis le ${fmtDate(a.submitted_at)}
+            </div>
+            ${a.motivation ? `<div style="font-size:.82rem;margin-top:.4rem;color:var(--grey-700);font-style:italic">"${a.motivation.slice(0,120)}${a.motivation.length > 120 ? '…' : ''}"</div>` : ''}
+          </div>
+          <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-self:flex-start">
+            ${a.status === 'pending' ? `
+              <button class="btn btn-primary btn-sm" onclick="reviewApplication('${a.id}','accepted')">✅ Accepter</button>
+              <button class="btn btn-outline btn-sm" onclick="reviewApplication('${a.id}','reviewing')">👁 En revue</button>
+              <button class="btn btn-danger btn-sm" onclick="reviewApplication('${a.id}','rejected')">❌ Refuser</button>
+            ` : `
+              <button class="btn btn-ghost btn-sm" onclick="reviewApplication('${a.id}','pending')">↩ Réinitialiser</button>
+            `}
+          </div>
+        </div>
+      </div>
+    `).join('');
+  } catch (e) {
+    list.innerHTML = `<div style="color:var(--grey-500);padding:1rem">${e.message}</div>`;
+  }
+}
+
+window.reviewApplication = async function(id, status) {
+  await window.db.updateApplicationStatus(id, status);
+  showToast(`Candidature marquée : ${status}`, 'success');
+  loadApplications();
+  checkApplicationBadge();
+};
+
+async function checkApplicationBadge() {
+  const apps = await window.db.getAllApplications().catch(() => []);
+  const pending = apps.filter(a => a.status === 'pending').length;
+  const badge = document.getElementById('badge-apps');
+  if (badge) {
+    if (pending > 0) { badge.textContent = pending; badge.style.display = 'inline-flex'; }
+    else { badge.style.display = 'none'; }
+  }
+}
+
+// ── Admin Credential Update ─────────────────────────────────
+async function loadSettings() {
+  // Load current admin email into form
+  const adminCreds = window.db.getAdminCredentials();
+  const emailEl = document.getElementById('current-admin-email');
+  if (emailEl) emailEl.value = adminCreds.email || '';
+  const nameEl = document.getElementById('cred-new-name');
+  if (nameEl && adminCreds.name) nameEl.placeholder = adminCreds.name;
+}
+
+window.handleUpdateAdminCreds = async function(e) {
+  e.preventDefault();
+  const currentPass = document.getElementById('cred-current-pass').value;
+  const newName     = document.getElementById('cred-new-name').value.trim();
+  const newEmail    = document.getElementById('cred-new-email').value.trim();
+  const newPass     = document.getElementById('cred-new-pass').value;
+
+  const resultEl = document.getElementById('cred-result');
+  resultEl.style.display = 'none';
+
+  const btn = document.getElementById('cred-save-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Mise à jour…';
+
+  try {
+    const updated = await window.db.updateAdminCredentials(currentPass, newEmail || null, newPass || null, newName || null);
+    resultEl.style.cssText = 'display:block;background:var(--green-50);border:1.5px solid var(--green-300);color:var(--green-800);border-radius:var(--radius-sm)';
+    resultEl.innerHTML = `✅ Identifiants mis à jour avec succès. Nouvel e-mail : <strong>${updated.email}</strong>`;
+    document.getElementById('current-admin-email').value = updated.email;
+    document.getElementById('cred-current-pass').value = '';
+    document.getElementById('cred-new-pass').value = '';
+    // Update sidebar user display
+    const userEl = document.getElementById('sidebar-user');
+    if (userEl) userEl.textContent = updated.name || updated.email;
+    showToast('Identifiants administrateur mis à jour.', 'success');
+  } catch (err) {
+    resultEl.style.cssText = 'display:block;background:#fee2e2;border:1.5px solid #fca5a5;color:#991b1b;border-radius:var(--radius-sm)';
+    resultEl.innerHTML = `❌ ${err.message}`;
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Enregistrer les modifications';
+};
+
+// Hook into showPanel to load workers when navigating there
+const _origShowPanel = window.showPanel;
+window.showPanel = function(name) {
+  _origShowPanel(name);
+  if (name === 'workers') {
+    loadWorkers();
+    checkApplicationBadge();
+  }
+  if (name === 'settings') loadSettings();
+};
+
+// Also check application badge on dashboard load
+const _origRefresh = window.refreshDashboard;
+window.refreshDashboard = async function() {
+  await _origRefresh();
+  checkApplicationBadge();
+};

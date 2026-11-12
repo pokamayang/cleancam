@@ -9,7 +9,7 @@
 
 <!-- PWA manifest -->
 <link rel="manifest" href="manifest.json">
-<link rel="icon" type="image/svg+xml" href="assets/icons/icon-192.svg">
+<link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg">
 <link rel="apple-touch-icon" href="assets/icons/icon-192.svg">
 
 <!-- Leaflet CSS -->
@@ -18,6 +18,9 @@
 <!-- Google Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<!-- Font Awesome Professional Icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-Avb2QiuDEEvB4bZJYdft2mNjVShBftLdPG8FJ0V7irTLQ8Uo0qcPxh4Plq7G5tGm0rU+1SPhVotteLpBERwTkw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
 <!-- App styles -->
 <link rel="stylesheet" href="css/main.css">
@@ -37,21 +40,21 @@
   </a>
 
   <ul class="navbar-links" id="nav-links">
-    <li><a href="index.html" class="active" data-i18n="nav_home">Accueil</a></li>
-    <li><a href="pages/report.html" data-i18n="nav_report">Signaler</a></li>
-    <li><a href="pages/map.html" data-i18n="nav_map">Carte</a></li>
-    <li><a href="pages/dashboard.html">Dashboard</a></li>
-    <li><a href="javascript:void(0)" onclick="openIVR()">📞 <span data-i18n="nav_ivr">Ligne IVR</span></a></li>
-    <li><a href="javascript:void(0)" onclick="openTestRunner()">🧪 Tests (T1-T15)</a></li>
-    <li id="nav-auth-login"><a href="pages/login.html" data-i18n="nav_login">Connexion</a></li>
-    <li id="nav-auth-logout" style="display:none"><a href="#" onclick="handleLogout()" data-i18n="nav_logout">Déconnexion</a></li>
+    <li><a href="index.html" class="active" data-i18n="nav_home"><i class="fa-solid fa-house" style="margin-right:.3rem"></i><span data-i18n="nav_home">Accueil</span></a></li>
+    <li><a href="pages/report.html"><i class="fa-solid fa-camera" style="margin-right:.3rem"></i><span data-i18n="nav_report">Signaler</span></a></li>
+    <li><a href="pages/map.html"><i class="fa-solid fa-map-location-dot" style="margin-right:.3rem"></i><span data-i18n="nav_map">Carte</span></a></li>
+    <li><a href="pages/apply.html"><i class="fa-solid fa-hard-hat" style="margin-right:.3rem"></i>Rejoindre l'équipe</a></li>
+    <li><a href="javascript:void(0)" onclick="openIVR()"><i class="fa-solid fa-phone" style="margin-right:.3rem"></i><span data-i18n="nav_ivr">Ligne IVR</span></a></li>
+    <li><a href="javascript:void(0)" onclick="openTestRunner()"><i class="fa-solid fa-flask" style="margin-right:.3rem"></i>Tests (T1-T15)</a></li>
+    <li id="nav-auth-login"><a href="pages/login.html"><i class="fa-solid fa-right-to-bracket" style="margin-right:.3rem"></i><span data-i18n="nav_login">Connexion</span></a></li>
+    <li id="nav-auth-logout" style="display:none"><a href="#" onclick="handleLogout()"><i class="fa-solid fa-right-from-bracket" style="margin-right:.3rem"></i><span data-i18n="nav_logout">Déconnexion</span></a></li>
   </ul>
 
   <div class="navbar-actions">
     <button class="lang-toggle" onclick="toggleLang()" id="lang-btn" aria-label="Switch language">
-      🌍 <span data-i18n="lang_toggle">Français</span>
+      <i class="fa-solid fa-earth-africa"></i> <span data-i18n="lang_toggle">Français</span>
     </button>
-    <a href="pages/report.html" class="btn btn-primary btn-sm" data-i18n="nav_report" aria-label="New report">Signaler</a>
+    <a href="pages/report.html" class="btn btn-primary btn-sm" data-i18n="nav_report" aria-label="New report"><i class="fa-solid fa-camera" style="margin-right:.3rem"></i>Signaler</a>
     <button class="hamburger" id="hamburger" aria-label="Toggle menu" aria-expanded="false">
       <span></span><span></span><span></span>
     </button>
@@ -68,7 +71,7 @@
 
   <div class="hero-content container">
     <div class="hero-badge" aria-label="Version badge">
-      🌿 <span data-i18n="hero_badge">Hackathon Build · v1.0</span>
+      <i class="fa-solid fa-leaf"></i> <span data-i18n="hero_badge">Hackathon Build · v1.0</span>
     </div>
     <h1 id="hero-title">
       <span data-i18n="hero_title">CleanCam Cameroun</span><br>
@@ -79,14 +82,20 @@
     </p>
     <div class="hero-actions">
       <a href="pages/report.html" class="btn btn-primary btn-lg" data-i18n="hero_cta1">
-        📸 Signaler une pollution
+        <i class="fa-solid fa-camera"></i>&nbsp;Signaler une pollution
       </a>
       <a href="pages/map.html" class="btn btn-outline btn-lg" data-i18n="hero_cta2">
-        🗺 Voir la carte des points chauds
+        <i class="fa-solid fa-map-location-dot"></i>&nbsp;Voir la carte des points chauds
       </a>
       <button onclick="openIVR()" class="btn btn-secondary btn-lg" style="background:#0f172a;color:white;border-radius:var(--radius-md);display:inline-flex;align-items:center;gap:.5rem">
-        <span>📞</span> <span data-i18n="btn_ivr">Tester la Ligne Vocale IVR</span>
+        <i class="fa-solid fa-phone-volume"></i> <span data-i18n="btn_ivr">Tester la Ligne Vocale IVR</span>
       </button>
+    </div>
+    <div style="margin-top:1.25rem;font-size:.85rem;color:var(--grey-500)">
+      <i class="fa-solid fa-lock-open" style="color:var(--green-600)"></i>&nbsp;
+      Aucun compte requis pour signaler – <a href="pages/login.html" style="color:var(--green-700);font-weight:600;text-decoration:underline">Connexion optionnelle</a>
+      &nbsp;·&nbsp;
+      <a href="pages/apply.html" style="color:var(--green-700);font-weight:600;text-decoration:underline"><i class="fa-solid fa-hard-hat"></i> Postuler comme agent</a>
     </div>
   </div>
 </section>
@@ -122,22 +131,22 @@
     </p>
     <div class="how-grid">
       <div class="how-card tilt-card reveal">
-        <div class="how-icon">📸</div>
+        <div class="how-icon"><i class="fa-solid fa-camera-retro"></i></div>
         <h3 data-i18n="how_1_title">Signaler</h3>
         <p data-i18n="how_1_desc">Prenez une photo, enregistrez un message vocal ou appelez notre ligne gratuite – sans internet.</p>
       </div>
       <div class="how-card tilt-card reveal" style="transition-delay:.1s">
-        <div class="how-icon">🤖</div>
+        <div class="how-icon"><i class="fa-solid fa-robot"></i></div>
         <h3 data-i18n="how_2_title">Analyse par IA</h3>
         <p data-i18n="how_2_desc">Notre IA classe le type, la gravité et l'acteur recommandé instantanément.</p>
       </div>
       <div class="how-card tilt-card reveal" style="transition-delay:.2s">
-        <div class="how-icon">🏛️</div>
+        <div class="how-icon"><i class="fa-solid fa-building-shield"></i></div>
         <h3 data-i18n="how_3_title">Action municipale</h3>
         <p data-i18n="how_3_desc">Les agents reçoivent le dossier sur un tableau de bord en direct et affectent une équipe.</p>
       </div>
       <div class="how-card tilt-card reveal" style="transition-delay:.3s">
-        <div class="how-icon">✅</div>
+        <div class="how-icon"><i class="fa-solid fa-circle-check"></i></div>
         <h3 data-i18n="how_4_title">Résolution &amp; Suivi</h3>
         <p data-i18n="how_4_desc">Vous recevez une mise à jour et un code de référence pour chaque signalement.</p>
       </div>
@@ -150,7 +159,7 @@
   <div class="container">
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:center" class="reveal-grid">
       <div class="reveal reveal-left">
-        <span class="badge badge-red" style="margin-bottom:1rem">🚨 Urgence Cameroun</span>
+        <span class="badge badge-red" style="margin-bottom:1rem"><i class="fa-solid fa-triangle-exclamation"></i> Urgence Cameroun</span>
         <h2>Douala produit ~2 700 t de déchets par jour</h2>
         <p style="margin:1rem 0;line-height:1.6">
           Seules ~1 800 t sont collectées. Le reste bouche les canaux de drainage, provoque de graves inondations et pollue l'air. Les PM2.5 dépassent 5× les normes OMS aux grands carrefours.
@@ -174,7 +183,7 @@
       <div class="reveal reveal-right" style="display:flex;flex-direction:column;gap:1.25rem">
         <!-- DrainageGuard Spotlight Card -->
         <div class="card card-green tilt-card" style="display:flex;align-items:flex-start;gap:1rem;border:2px solid var(--green-400)">
-          <div style="font-size:2.4rem">💧</div>
+          <div style="font-size:2.4rem;color:var(--green-600)"><i class="fa-solid fa-droplet"></i></div>
           <div style="flex:1">
             <div style="display:flex;justify-content:space-between;align-items:center">
               <h4 style="margin:0;font-size:1.05rem">AI DrainageGuard (Prototype Hybride)</h4>
@@ -185,17 +194,17 @@
             </p>
             <div style="display:flex;gap:.5rem;flex-wrap:wrap">
               <button class="btn btn-outline btn-sm" onclick="simulateDrainSurgeDemo()" style="font-size:.75rem">
-                ⚡ Simuler Crue d'eau (Akwa)
+                <i class="fa-solid fa-bolt"></i> Simuler Crue d'eau (Akwa)
               </button>
-              <a href="pages/dashboard.html" class="btn btn-ghost btn-sm" style="font-size:.75rem">
-                Voir nœuds →
+              <a href="pages/login.html?reason=admin" class="btn btn-ghost btn-sm" style="font-size:.75rem">
+                Voir nœuds <i class="fa-solid fa-arrow-right"></i>
               </a>
             </div>
           </div>
         </div>
 
         <div class="card tilt-card" style="display:flex;align-items:center;gap:1rem">
-          <div style="font-size:2rem">📡</div>
+          <div style="font-size:2rem;color:var(--green-600)"><i class="fa-solid fa-tower-broadcast"></i></div>
           <div>
             <div style="display:flex;gap:.5rem;align-items:center">
               <h4 style="margin:0">Capteurs Qualité de l'Air (PM2.5 / PM10)</h4>
@@ -206,7 +215,7 @@
         </div>
 
         <div class="card tilt-card" style="display:flex;align-items:center;gap:1rem">
-          <div style="font-size:2rem">📞</div>
+          <div style="font-size:2rem;color:var(--green-600)"><i class="fa-solid fa-phone-volume"></i></div>
           <div>
             <div style="display:flex;gap:.5rem;align-items:center">
               <h4 style="margin:0">Ligne Vocale IVR sans Internet</h4>
@@ -229,22 +238,22 @@
     </p>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem" class="channels-grid">
       <div class="card tilt-card reveal" style="text-align:center;transition-delay:.0s">
-        <div style="font-size:2.5rem;margin-bottom:.75rem">📱</div>
+        <div style="font-size:2.5rem;margin-bottom:.75rem;color:var(--green-600)"><i class="fa-solid fa-mobile-screen-button"></i></div>
         <h3>Application web / PWA</h3>
         <p style="font-size:.875rem">Photo, lecture GPS EXIF automatique, file d'attente hors-ligne &amp; synchronisation.</p>
-        <a href="pages/report.html" class="btn btn-primary btn-sm" style="margin-top:1rem" data-i18n="nav_report">Signaler</a>
+        <a href="pages/report.html" class="btn btn-primary btn-sm" style="margin-top:1rem" data-i18n="nav_report"><i class="fa-solid fa-camera"></i>&nbsp;Signaler</a>
       </div>
       <div class="card tilt-card reveal" style="text-align:center;transition-delay:.1s">
-        <div style="font-size:2.5rem;margin-bottom:.75rem">📞</div>
+        <div style="font-size:2.5rem;margin-bottom:.75rem;color:var(--green-600)"><i class="fa-solid fa-phone-volume"></i></div>
         <h3>Ligne vocale (IVR)</h3>
         <p style="font-size:.875rem">N'importe quel téléphone, sans internet, menu bilingue FR/EN avec synthèse vocale.</p>
-        <button onclick="openIVR()" class="btn btn-outline btn-sm" style="margin-top:1rem">📞 Ouvrir simulateur IVR</button>
+        <button onclick="openIVR()" class="btn btn-outline btn-sm" style="margin-top:1rem"><i class="fa-solid fa-phone"></i>&nbsp;Ouvrir simulateur IVR</button>
       </div>
       <div class="card tilt-card reveal" style="text-align:center;transition-delay:.2s">
-        <div style="font-size:2.5rem;margin-bottom:.75rem">🏛️</div>
+        <div style="font-size:2.5rem;margin-bottom:.75rem;color:var(--green-600)"><i class="fa-solid fa-building-shield"></i></div>
         <h3>Guichet mairie &amp; Radio</h3>
         <p style="font-size:.875rem">Les agents municipaux et animateurs radio saisissent les doléances en direct.</p>
-        <a href="pages/login.html" class="btn btn-outline btn-sm" style="margin-top:1rem">Dashboard agent →</a>
+        <a href="pages/apply.html" class="btn btn-outline btn-sm" style="margin-top:1rem"><i class="fa-solid fa-hard-hat"></i>&nbsp;Rejoindre l'équipe</a>
       </div>
     </div>
   </div>
@@ -254,7 +263,7 @@
 <section class="section" style="background:var(--green-900);color:white" id="about">
   <div class="container">
     <div class="ivr-section reveal" style="border:none">
-      <div class="ivr-phone-anim" aria-hidden="true" style="font-size:3.5rem">📞</div>
+      <div class="ivr-phone-anim" aria-hidden="true" style="font-size:3.5rem;color:white"><i class="fa-solid fa-phone-volume"></i></div>
       <div style="flex:1">
         <h2 style="color:white" data-i18n="ivr_title">Pas d'internet ? Appelez le serveur vocal CleanCam</h2>
         <p style="color:rgba(255,255,255,.85);margin:.75rem 0 1.25rem;line-height:1.5" data-i18n="ivr_desc">
@@ -262,12 +271,48 @@
         </p>
         <div style="display:flex;flex-wrap:wrap;gap:.75rem">
           <button onclick="openIVR()" class="btn btn-primary btn-lg" style="background:#22c55e;color:#0f172a;font-weight:700">
-            📞 Tester le simulateur d'appel maintenant
+            <i class="fa-solid fa-phone-volume"></i>&nbsp;Tester le simulateur d'appel maintenant
           </button>
           <button onclick="openTestRunner()" class="btn btn-outline btn-lg" style="color:white;border-color:rgba(255,255,255,.4)">
-            🧪 Vérification SRS (T1 - T15)
+            <i class="fa-solid fa-flask"></i>&nbsp;Vérification SRS (T1 - T15)
           </button>
         </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Contact Section ─────────────────────────────────────── -->
+<section class="section" style="background:white" id="contact">
+  <div class="container">
+    <h2 class="section-title reveal" style="margin-bottom:.75rem">
+      <i class="fa-solid fa-envelope" style="color:var(--green-600);margin-right:.5rem"></i>Contacts CleanCam
+    </h2>
+    <p class="section-sub reveal">Pour toute demande, partenariat ou candidature</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.5rem;margin-top:2rem">
+      <div class="card reveal" style="text-align:center">
+        <div style="font-size:2.5rem;margin-bottom:.75rem;color:var(--green-600)"><i class="fa-solid fa-hard-hat"></i></div>
+        <h3>Candidatures &amp; Emplois</h3>
+        <p style="font-size:.875rem;margin:.5rem 0 1rem">Postuler comme agent de terrain, technicien ou opérateur CleanCam.</p>
+        <a href="mailto:careers@cleancam.cm" class="btn btn-primary" style="width:100%">
+          <i class="fa-solid fa-envelope"></i>&nbsp;careers@cleancam.cm
+        </a>
+      </div>
+      <div class="card reveal" style="text-align:center;transition-delay:.1s">
+        <div style="font-size:2.5rem;margin-bottom:.75rem;color:var(--green-600)"><i class="fa-solid fa-handshake"></i></div>
+        <h3>Partenariats &amp; Entreprises</h3>
+        <p style="font-size:.875rem;margin:.5rem 0 1rem">Contrats de collecte, partenariats institutionnels et collaborations B2B.</p>
+        <a href="mailto:partnerships@cleancam.cm" class="btn btn-primary" style="width:100%">
+          <i class="fa-solid fa-envelope"></i>&nbsp;partnerships@cleancam.cm
+        </a>
+      </div>
+      <div class="card reveal" style="text-align:center;transition-delay:.2s">
+        <div style="font-size:2.5rem;margin-bottom:.75rem;color:var(--green-600)"><i class="fa-solid fa-circle-info"></i></div>
+        <h3>Informations générales</h3>
+        <p style="font-size:.875rem;margin:.5rem 0 1rem">Presse, questions générales, retours citoyens sur la plateforme.</p>
+        <a href="mailto:info@cleancam.cm" class="btn btn-primary" style="width:100%">
+          <i class="fa-solid fa-envelope"></i>&nbsp;info@cleancam.cm
+        </a>
       </div>
     </div>
   </div>
