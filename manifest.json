@@ -8,6 +8,12 @@
   "description": "Plateforme citoyenne et IA de signalement de pollution et surveillance des caniveaux au Cameroun.",
   "icons": [
     {
+      "src": "assets/icons/favicon.svg",
+      "sizes": "64x64",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
       "src": "assets/icons/icon-192.svg",
       "sizes": "192x192",
       "type": "image/svg+xml",

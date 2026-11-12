@@ -20,13 +20,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Auth guard: check session
   const session = await window.db.getSession();
   if (!session) {
-    // If not logged in, auto-fill demo admin session for seamless hackathon review
-    try {
-      await window.db.signIn(CC.ADMIN_EMAIL, CC.ADMIN_PASSWORD);
-    } catch (_) {
-      window.location.href = 'login.html';
-      return;
-    }
+    // Redirect to login page if not authenticated
+    window.location.href = 'login.html?reason=admin&redirect=dashboard.html';
+    return;
   }
 
   const user = await window.db.getUser();
@@ -631,6 +627,8 @@ function initDashMap() {
   }).addTo(dashMap);
   dashMapMarkers = L.layerGroup().addTo(dashMap);
   refreshDashMapMarkers();
+  // Fix: invalidate size after layout settles
+  setTimeout(() => { if (dashMap) dashMap.invalidateSize(); }, 200);
 }
 
 function refreshDashMapMarkers() {

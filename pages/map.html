@@ -7,8 +7,10 @@
 
 <!-- Leaflet CSS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link rel="icon" type="image/svg+xml" href="../assets/icons/favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-Avb2QiuDEEvB4bZJYdft2mNjVShBftLdPG8FJ0V7irTLQ8Uo0qcPxh4Plq7G5tGm0rU+1SPhVotteLpBERwTkw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 <link rel="stylesheet" href="../css/main.css">
 <style>
   body { overflow: hidden; }
@@ -70,17 +72,17 @@
     CleanCam
   </a>
   <ul class="navbar-links" id="nav-links">
-    <li><a href="../index.html" data-i18n="nav_home">Accueil</a></li>
-    <li><a href="report.html" data-i18n="nav_report">Signaler</a></li>
-    <li><a href="map.html" class="active" data-i18n="nav_map">Carte</a></li>
-    <li><a href="dashboard.html">Dashboard</a></li>
-    <li><a href="javascript:void(0)" onclick="openIVR()">📞 <span data-i18n="nav_ivr">Ligne IVR</span></a></li>
-    <li id="nav-auth-login"><a href="login.html" data-i18n="nav_login">Connexion</a></li>
-    <li id="nav-auth-logout" style="display:none"><a href="#" onclick="handleLogout()" data-i18n="nav_logout">Déconnexion</a></li>
+    <li><a href="../index.html"><i class="fa-solid fa-house" style="margin-right:.3rem"></i><span data-i18n="nav_home">Accueil</span></a></li>
+    <li><a href="report.html"><i class="fa-solid fa-camera" style="margin-right:.3rem"></i><span data-i18n="nav_report">Signaler</span></a></li>
+    <li><a href="map.html" class="active"><i class="fa-solid fa-map-location-dot" style="margin-right:.3rem"></i><span data-i18n="nav_map">Carte</span></a></li>
+    <li><a href="apply.html"><i class="fa-solid fa-hard-hat" style="margin-right:.3rem"></i>Rejoindre l'équipe</a></li>
+    <li><a href="javascript:void(0)" onclick="openIVR()"><i class="fa-solid fa-phone" style="margin-right:.3rem"></i><span data-i18n="nav_ivr">Ligne IVR</span></a></li>
+    <li id="nav-auth-login"><a href="login.html"><i class="fa-solid fa-right-to-bracket" style="margin-right:.3rem"></i><span data-i18n="nav_login">Connexion</span></a></li>
+    <li id="nav-auth-logout" style="display:none"><a href="#" onclick="handleLogout()"><i class="fa-solid fa-right-from-bracket" style="margin-right:.3rem"></i><span data-i18n="nav_logout">Déconnexion</span></a></li>
   </ul>
   <div class="navbar-actions">
-    <button class="lang-toggle" onclick="toggleLang()">🌍 <span data-i18n="lang_toggle">Français</span></button>
-    <a href="report.html" class="btn btn-primary btn-sm" data-i18n="nav_report">Signaler</a>
+    <button class="lang-toggle" onclick="toggleLang()" id="lang-btn"><i class="fa-solid fa-earth-africa"></i> <span data-i18n="lang_toggle">Français</span></button>
+    <a href="report.html" class="btn btn-primary btn-sm"><i class="fa-solid fa-camera" style="margin-right:.3rem"></i><span data-i18n="nav_report">Signaler</span></a>
     <button class="hamburger" id="hamburger" aria-label="Toggle menu"><span></span><span></span><span></span></button>
   </div>
 </nav>

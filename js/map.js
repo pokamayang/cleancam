@@ -41,6 +41,10 @@ function initMap() {
 
   refreshMap();
   refreshInterval = setInterval(refreshMap, CC.REFRESH_PUBLIC);
+
+  // Fix: invalidate size after layout settles (common Leaflet flexbox issue)
+  setTimeout(() => { if (map) map.invalidateSize(); }, 200);
+  window.addEventListener('resize', () => { if (map) map.invalidateSize(); });
 }
 
 async function refreshMap() {
